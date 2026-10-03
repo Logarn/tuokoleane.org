@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/listing/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

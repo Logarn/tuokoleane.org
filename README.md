@@ -5,11 +5,17 @@ An interactive MVP for Tuokoleane Initiative’s “Amazon of Charity” idea: p
 ## What works
 
 - Searchable, filterable kindness marketplace
+- Individual, shareable listing routes under `/listing/:id`
+- Four-image listing galleries with representative prototype photography
 - Fixed-price, custom-amount and time-based packages
 - Persistent local basket with quantity controls
-- Responsive package details, checkout and confirmation flows
+- Responsive listing, gallery, checkout and confirmation flows
 - Honest preview boundary: no payment, email, allocation or volunteer placement is created
-- Accessible labels, keyboard escape handling and reduced-motion support
+- Accessible labels and reduced-motion support
+
+## Image and brand boundary
+
+The blue Tuokoleane logo is rendered from the organization-supplied PDF. Listing photographs are AI-generated representative imagery for the prototype; they are not beneficiary records or evidence of completed Tuokoleane activities. That disclosure also appears on every listing page.
 
 ## Run locally
 

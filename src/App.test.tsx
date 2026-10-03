@@ -1,10 +1,23 @@
-import { render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 describe("Tuokoleane kindness marketplace", () => {
-  beforeEach(() => window.localStorage.clear());
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState({}, "", "/");
+    vi.stubGlobal("scrollTo", vi.fn());
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("filters the catalogue by category", async () => {
     const user = userEvent.setup();
@@ -17,32 +30,40 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
 
-  it("adds a fixed-price package and updates the total", async () => {
+  it("opens each package on its own route", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const mealCard = screen.getByRole("heading", { name: "Buy a meal" }).closest("article");
-    expect(mealCard).not.toBeNull();
-    await user.click(within(mealCard!).getByRole("button", { name: "Add to basket" }));
-    const detailDialog = screen.getByRole("dialog", { name: "Buy a meal" });
-    await user.click(within(detailDialog).getByRole("button", { name: /Add to basket/i }));
+    await user.click(screen.getByRole("link", { name: "View Buy a meal" }));
 
-    expect(screen.getByRole("heading", { name: "Kindness basket" })).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/listing/meal");
+    expect(screen.getByRole("heading", { name: "Buy a meal", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "About this act of kindness" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show all photos" })).toBeInTheDocument();
+  });
+
+  it("adds a fixed-price package from its detail page", async () => {
+    window.history.replaceState({}, "", "/listing/meal");
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+
     const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
-    expect(within(basketDialog).getAllByText(/100/).length).toBeGreaterThan(0);
+    expect(within(basketDialog).getByText("Buy a meal")).toBeInTheDocument();
+    expect(within(basketDialog).getAllByText(/500/).length).toBeGreaterThan(0);
   });
 
   it("prevents a custom contribution below the demo minimum", async () => {
+    window.history.replaceState({}, "", "/listing/school-fees");
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getAllByRole("button", { name: "Choose amount" })[0]);
     const amount = screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" });
     await user.clear(amount);
-    await user.type(amount, "50");
+    await user.type(amount, "400");
 
-    expect(screen.getByText("Enter at least KSh 100 for this demo.")).toBeInTheDocument();
-    const detailDialog = screen.getByRole("dialog", { name: "Support school fees" });
-    expect(within(detailDialog).getByRole("button", { name: /Add to basket/i })).toBeDisabled();
+    expect(screen.getByText("Enter at least Ksh 500 for this demo.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add to basket" })).toBeDisabled();
   });
 });
