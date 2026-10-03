@@ -20,7 +20,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { categories, kindnessPackages, programs, type KindnessPackage } from "./data";
+import { categories, kindnessPackages, programs, type KindnessPackage, type Program } from "./data";
 
 interface BasketItem {
   packageId: string;
@@ -41,6 +41,19 @@ const currency = new Intl.NumberFormat("en-KE", {
 });
 
 const packageById = new Map(kindnessPackages.map((item) => [item.id, item]));
+const programById = new Map(programs.map((program) => [program.id, program]));
+
+const placesReached = [
+  { short: "MKU", name: "Mount Kenya University" },
+  { short: "PU", name: "Pwani University" },
+  { short: "UoN", name: "University of Nairobi" },
+  { short: "JKUAT", name: "Jomo Kenyatta University of Agriculture and Technology" },
+  { short: "Kwale", name: "Kwale County" },
+  { short: "Kisii", name: "Kisii County" },
+  { short: "Machakos", name: "Machakos County" },
+  { short: "Kisumu", name: "Kisumu County" },
+  { short: "Kakamega", name: "Kakamega County" },
+];
 
 function packagePrice(item: KindnessPackage) {
   if (item.kind === "fixed") return currency.format(item.price ?? 0);
@@ -76,6 +89,9 @@ function App() {
   const routePackage = path.startsWith("/listing/")
     ? packageById.get(decodeURIComponent(path.slice("/listing/".length)))
     : undefined;
+  const routeProgram = path.startsWith("/program/")
+    ? programById.get(decodeURIComponent(path.slice("/program/".length)))
+    : undefined;
 
   useEffect(() => {
     const updatePath = () => setPath(window.location.pathname);
@@ -98,8 +114,10 @@ function App() {
   useEffect(() => {
     document.title = routePackage
       ? `${routePackage.title} | Tuokoleane Initiative`
-      : "Catalogue of Kindness | Tuokoleane Initiative";
-  }, [routePackage]);
+      : routeProgram
+        ? `${routeProgram.name} | Tuokoleane Initiative`
+        : "Catalogue of Kindness | Tuokoleane Initiative";
+  }, [routePackage, routeProgram]);
 
   const navigate = (nextPath: string, hash?: string) => {
     const destination = `${nextPath}${hash ? `#${hash}` : ""}`;
@@ -152,6 +170,7 @@ function App() {
   };
 
   const isListingRoute = path.startsWith("/listing/");
+  const isProgramRoute = path.startsWith("/program/");
 
   return (
     <div className="app-shell">
@@ -166,6 +185,12 @@ function App() {
       {isListingRoute ? (
         routePackage ? (
           <ListingPage item={routePackage} onAdd={addToBasket} onNavigate={navigate} />
+        ) : (
+          <NotFound onNavigate={navigate} />
+        )
+      ) : isProgramRoute ? (
+        routeProgram ? (
+          <ProgramPage program={routeProgram} onNavigate={navigate} />
         ) : (
           <NotFound onNavigate={navigate} />
         )
@@ -310,10 +335,31 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         </div>
       </section>
 
+      <section className="reach-section" aria-labelledby="reach-title">
+        <div className="page-width reach-heading">
+          <p className="eyebrow">A growing family</p>
+          <h2 id="reach-title">Touching lives across campuses and counties.</h2>
+        </div>
+        <div className="reach-marquee" role="region" aria-label="Places and communities reached">
+          <div className="reach-track">
+            {[0, 1].map((set) => (
+              <div className="reach-set" key={set} aria-hidden={set === 1}>
+                {placesReached.map((place) => (
+                  <span className="reach-mark" key={`${set}-${place.name}`}>
+                    <b>{place.short}</b><span>{place.name}</span>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="page-width reach-note">Names indicate places and communities reached. Inclusion does not imply institutional endorsement.</p>
+      </section>
+
       <section className="values-section" id="values">
         <div className="page-width values-heading">
           <p className="eyebrow">The values behind every listing</p>
-          <h2>Dignity over display.<br />Clarity over vague promises.<br />Belonging over pity.</h2>
+          <h2><span>Dignity over display.</span><span>Clarity over vague promises.</span><span>Belonging over pity.</span></h2>
         </div>
         <div className="page-width values-infographic">
           <article className="value-card value-card-primary">
@@ -333,7 +379,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           </article>
         </div>
         <div className="page-width model-stats" aria-label="Catalogue overview">
-          <div><strong>8</strong><span>practical ways to help</span></div>
+          <div><strong>12</strong><span>practical ways to help</span></div>
           <div><strong>3</strong><span>ways to give: money, time or goods</span></div>
           <div><strong>{currency.format(500)}</strong><span>starting contribution</span></div>
         </div>
@@ -390,11 +436,9 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           <p className="eyebrow">The work behind the listings</p>
           <h2>One initiative. Several ways to belong.</h2>
         </div>
-        <div className="program-list">
+        <div className="program-grid">
           {programs.map((program) => (
-            <article className="program-row" key={program.name}>
-              <span>{program.number}</span><h3>{program.name}</h3><p>{program.summary}</p><ChevronRight size={19} />
-            </article>
+            <ProgramCard key={program.id} program={program} onNavigate={onNavigate} />
           ))}
         </div>
       </section>
@@ -405,6 +449,84 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           <div><p>Help without turning someone’s life into a performance. Make the promise clear. Let the person receiving care keep their privacy, choices and voice.</p><button className="primary-button manifesto-button" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>Choose one useful act <ArrowRight size={18} /></button></div>
         </div>
       </section>
+    </main>
+  );
+}
+
+function ProgramCard({ program, onNavigate }: { program: Program; onNavigate: (path: string) => void }) {
+  const path = `/program/${program.id}`;
+  const open = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    onNavigate(path);
+  };
+
+  return (
+    <article className="program-card" style={{ "--program-accent": program.accent } as React.CSSProperties}>
+      <a className="program-card-photo" href={path} onClick={open} aria-label={`Explore ${program.name}`}>
+        <img src={program.image} alt={program.imageAlt} />
+        <span>{program.imageSource === "archive" ? "Tuokoleane archive" : "Programme concept"}</span>
+      </a>
+      <div className="program-card-body">
+        <div className="program-card-number">{program.number}</div>
+        <p>{program.kicker}</p>
+        <h3><a href={path} onClick={open}>{program.name}</a></h3>
+        <p className="program-card-summary">{program.summary}</p>
+        <div className="program-tags" aria-label={`${program.name} activities`}>
+          {program.activities.slice(0, 2).map((activity) => <span key={activity}>{activity}</span>)}
+        </div>
+        <a className="program-card-link" href={path} onClick={open}>Explore initiative <ChevronRight size={17} /></a>
+      </div>
+    </article>
+  );
+}
+
+function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (path: string, hash?: string) => void }) {
+  const relatedPackages = program.relatedPackageIds
+    .map((id) => packageById.get(id))
+    .filter((item): item is KindnessPackage => Boolean(item))
+    .slice(0, 3);
+
+  return (
+    <main className="program-page" style={{ "--program-accent": program.accent } as React.CSSProperties}>
+      <div className="program-page-shell page-width">
+        <button className="back-link" onClick={() => onNavigate("/", "programs")}><ArrowLeft size={18} /> All initiatives</button>
+        <section className="program-hero">
+          <div className="program-hero-copy">
+            <p className="eyebrow">{program.number} · {program.kicker}</p>
+            <h1>{program.name}</h1>
+            <p>{program.summary}</p>
+          </div>
+          <figure className="program-hero-media">
+            <img src={program.image} alt={program.imageAlt} />
+            <figcaption>{program.imageSource === "archive" ? "Real Tuokoleane programme photography · April 2025" : "Representative programme imagery · not a record of a completed activity"}</figcaption>
+          </figure>
+        </section>
+
+        <section className="program-overview">
+          <p className="eyebrow">What this initiative is for</p>
+          <p>{program.overview}</p>
+        </section>
+
+        <section className="program-detail-grid" aria-label={`${program.name} details`}>
+          <article><span>01</span><h2>What happens here</h2><ul>{program.activities.map((entry) => <li key={entry}>{entry}</li>)}</ul></article>
+          <article><span>02</span><h2>What it is designed to build</h2><ul>{program.intendedOutcomes.map((entry) => <li key={entry}>{entry}</li>)}</ul></article>
+          <article><span>03</span><h2>How progress can be understood</h2><ul>{program.measurements.map((entry) => <li key={entry}>{entry}</li>)}</ul></article>
+        </section>
+
+        <section className="program-related">
+          <div className="section-heading">
+            <p className="eyebrow">Take part in this work</p>
+            <h2>Practical ways in.</h2>
+            <p>These listings turn the programme idea into a clear contribution or expression of interest.</p>
+          </div>
+          <div className="related-grid">{relatedPackages.map((item) => <PackageCard key={item.id} item={item} onNavigate={onNavigate} />)}</div>
+        </section>
+
+        <section className="program-scope">
+          <ShieldCheck size={22} />
+          <div><strong>Clear about the boundary</strong><p>The programme descriptions reflect Tuokoleane’s supplied concept document. Intended outcomes are goals, not claims of measured impact. Payment and volunteer placement remain disabled in this prototype.</p></div>
+        </section>
+      </div>
     </main>
   );
 }
@@ -635,7 +757,7 @@ function Checkout({ basket, total, onBack, onClose, onSubmit }: CheckoutProps) {
 }
 
 function NotFound({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
-  return <main className="not-found page-width"><p className="eyebrow">Listing not found</p><h1>This way to help is not available.</h1><p>The link may have changed, or the listing may no longer be in this preview.</p><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Browse all listings</button></main>;
+  return <main className="not-found page-width"><p className="eyebrow">Page not found</p><h1>This part of the catalogue is not available.</h1><p>The link may have changed, or the page may no longer be in this preview.</p><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Browse the catalogue</button></main>;
 }
 
 function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
@@ -646,10 +768,10 @@ function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => v
       <div className="page-width footer-grid">
         <div className="footer-brand"><span className="footer-logo-crop"><img src="/images/brand/tuokoleane-logo-blue.png" alt="Tuokoleane Initiative" /></span><p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that everyone should be treated with dignity.</p><span>Kenya · Give · Share · Care</span></div>
         <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a><a href="/#values" onClick={(event) => homeLink(event, "values")}>Our values</a></div>
-        <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/mentor" onClick={(event) => { event.preventDefault(); onNavigate("/listing/mentor"); }}>Give your time</a></div>
-        <div><strong>Learn</strong><a href="/#how-it-works" onClick={(event) => homeLink(event, "how-it-works")}>How it works</a><a href="https://tuokoleane.org">Main website</a><span>Payments are not connected</span></div>
+        <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/wellness-day" onClick={(event) => { event.preventDefault(); onNavigate("/listing/wellness-day"); }}>Back a wellness day</a></div>
+        <div><strong>Learn</strong><a href="/program/sharesphere" onClick={(event) => { event.preventDefault(); onNavigate("/program/sharesphere"); }}>ShareSphere</a><a href="/program/family-units" onClick={(event) => { event.preventDefault(); onNavigate("/program/family-units"); }}>Family Units</a><a href="https://tuokoleane.org">Main website</a></div>
       </div>
-      <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Representative imagery · No payments</span></div>
+      <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Archive and representative imagery · No payments</span></div>
     </footer>
   );
 }

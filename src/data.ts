@@ -37,7 +37,24 @@ export interface KindnessPackage {
   goodToKnow: string[];
 }
 
-export const categories = ["All", "Food", "Education", "Environment", "Time & care", "Essentials"];
+export interface Program {
+  id: string;
+  number: string;
+  name: string;
+  kicker: string;
+  summary: string;
+  overview: string;
+  image: string;
+  imageAlt: string;
+  imageSource: "archive" | "representative";
+  accent: string;
+  activities: string[];
+  intendedOutcomes: string[];
+  measurements: string[];
+  relatedPackageIds: string[];
+}
+
+export const categories = ["All", "Food", "Education", "Mental wellness", "Health", "Environment", "Community", "Time & care", "Essentials"];
 
 const gallery = (id: string, descriptions: string[]): GalleryImage[] =>
   descriptions.map((description, index) => ({
@@ -234,13 +251,214 @@ export const kindnessPackages: KindnessPackage[] = [
     coordination: "The TI team confirms accepted items, condition and a suitable drop-off point.",
     goodToKnow: ["Do not drop items off before confirmation.", "Only clean, wearable clothing should be offered.", "Recipients should be able to choose what suits them."],
   },
+  {
+    id: "sharesphere-session",
+    title: "Back a ShareSphere session",
+    shortDescription: "Make room for honest conversation and creative expression.",
+    description:
+      "Contribute toward a facilitated TI ShareSphere gathering where young adults can talk, create and connect with peers. The format is community-based and non-clinical, with professional referrals considered when a participant needs more support.",
+    category: "Mental wellness",
+    program: "TI ShareSphere",
+    kind: "fixed",
+    price: 1500,
+    duration: "One session",
+    label: "Create space",
+    icon: MessageCircleHeart,
+    includes: ["A contribution toward session materials", "Facilitator and venue coordination", "A programme update when one is available"],
+    images: gallery("sharesphere-session", [
+      "young adults sharing artwork in a peer circle",
+      "a small outdoor peer conversation",
+      "a spoken-word and music session with a facilitator",
+      "a facilitator preparing a welcoming creative space",
+    ]),
+    suitableFor: "Anyone who wants to help create a calm, welcoming space for peer connection.",
+    coordination: "Tuokoleane confirms the facilitator, setting and session boundaries before the gathering takes place.",
+    goodToKnow: ["ShareSphere is not therapy or crisis care.", "Private stories must remain private.", "The contribution may support a shared session rather than one named participant."],
+  },
+  {
+    id: "elder-visit",
+    title: "Visit an older neighbour",
+    shortDescription: "Offer time, conversation and ordinary companionship.",
+    description:
+      "Register to take part in a coordinated visit with an older community member. A visit can include conversation, a simple game or a shared household activity, always on terms agreed with the person being visited.",
+    category: "Time & care",
+    program: "TI Family Experience",
+    kind: "time",
+    duration: "A few hours",
+    label: "Give company",
+    icon: HeartHandshake,
+    includes: ["Volunteer interest registration", "A locally coordinated and consented visit", "Practical guidance before the activity"],
+    images: gallery("elder-visit", [
+      "an older woman sharing tea with adult neighbours",
+      "an older man teaching a board game to younger neighbours",
+      "an older woman sharing family photographs with visitors",
+      "older neighbours and younger adults tending herbs together",
+    ]),
+    suitableFor: "Adults who can listen patiently, respect privacy and follow Tuokoleane’s visit guidance.",
+    coordination: "Tuokoleane confirms consent, timing, location and an appropriate activity before any visit is arranged.",
+    goodToKnow: ["Registering does not confirm a home visit.", "No person’s address or private details are shared publicly.", "The older person decides how they want to take part."],
+  },
+  {
+    id: "wellness-day",
+    title: "Support a wellness day",
+    shortDescription: "Help a community move, learn and recharge together.",
+    description:
+      "Contribute toward a TI FamilyFit activity built around movement, nutrition, hydration and practical preventive wellness. The exact activity is confirmed locally and may include a walk, dance session or community workshop.",
+    category: "Health",
+    program: "TI FamilyFit",
+    kind: "fixed",
+    price: 2300,
+    duration: "Half-day activity",
+    label: "Move together",
+    icon: Salad,
+    includes: ["Contribution toward activity logistics", "Locally coordinated facilitator or route", "A programme update when one is available"],
+    images: gallery("wellness-day", [
+      "a mixed-age outdoor community exercise session",
+      "adults preparing fruit and water at a nutrition workshop",
+      "a community wellness walk on a scenic trail",
+      "a joyful dance and aerobics session in a community hall",
+    ]),
+    suitableFor: "People who want to support social, practical and inclusive wellness activities.",
+    coordination: "The TI team confirms the activity, facilitator, venue and safety plan before scheduling the day.",
+    goodToKnow: ["This does not purchase medical treatment.", "Activities must suit the people taking part.", "Health checks or blood donation require qualified partners and separate confirmation."],
+  },
+  {
+    id: "food-shelf",
+    title: "Stock a Family Unit food shelf",
+    shortDescription: "Put useful staples within reach of one local community.",
+    description:
+      "Contribute toward a shared food shelf managed through a TI Family Unit. Local members confirm what is useful, track the shared stock and agree how it can support neighbours when a need arises.",
+    category: "Community",
+    program: "TI Family Units",
+    kind: "fixed",
+    price: 1800,
+    duration: "Community pool",
+    label: "Share locally",
+    icon: PackageOpen,
+    includes: ["Contribution toward locally selected staples", "Family Unit coordination and stock tracking", "An allocation update when one is available"],
+    images: gallery("food-shelf", [
+      "neighbours stocking a shared community food shelf",
+      "community members sorting dry food staples",
+      "a local team weighing food and checking inventory",
+      "neighbours planning the fair use of a shared food shelf",
+    ]),
+    suitableFor: "Donors who want to strengthen a small, locally managed pool of useful essentials.",
+    coordination: "The Family Unit checks current needs, selects the staples and records how the shared stock is used.",
+    goodToKnow: ["The contribution is pooled, not assigned to a named household.", "Items depend on local need and availability.", "Production still needs a published allocation and reporting process."],
+  },
 ];
 
-export const programs = [
-  { number: "01", name: "TI ShareSphere", summary: "Safe spaces for conversation, creative expression and peer connection." },
-  { number: "02", name: "TI All-Round Champ", summary: "Education, mentorship, scholarships and practical skills beyond the classroom." },
-  { number: "03", name: "TI Family Experience", summary: "Shared meals, visits and ordinary moments of belonging with vulnerable families." },
-  { number: "04", name: "TI Culinary Hub", summary: "Different cultures around one table, learning through food and story." },
-  { number: "05", name: "TI FamilyFit", summary: "Social, practical wellness through movement, nutrition and preventive care." },
-  { number: "06", name: "TI Family Units", summary: "Local communities built around sharing resources and looking after one another." },
+export const programs: Program[] = [
+  {
+    id: "sharesphere",
+    number: "01",
+    name: "TI ShareSphere",
+    kicker: "Expression, conversation and connection",
+    summary: "Safe spaces for conversation, creative expression and peer connection.",
+    overview: "ShareSphere is designed as a welcoming place for young people and community members to talk honestly, make something and feel less alone. Sessions can be in person or online and remain clearly non-clinical.",
+    image: "/images/listings/sharesphere-session/01.jpg",
+    imageAlt: "Representative peer group sharing artwork in a bright community studio",
+    imageSource: "representative",
+    accent: "#27759a",
+    activities: ["Coffee conversations and facilitated peer circles", "Art, music, spoken word and storytelling", "Guest conversations and professional referrals when needed"],
+    intendedOutcomes: ["Stronger self-expression", "More confident peer connection", "A clearer route to appropriate support"],
+    measurements: ["Sessions held and attendance", "Participant feedback", "Referrals requested or completed"],
+    relatedPackageIds: ["sharesphere-session", "listen"],
+  },
+  {
+    id: "all-round-champ",
+    number: "02",
+    name: "TI All-Round Champ",
+    kicker: "Learning beyond the classroom",
+    summary: "Education, mentorship, scholarships and practical skills beyond the classroom.",
+    overview: "All-Round Champ brings academic support together with confidence, creativity, leadership and practical life skills. The programme is intended to help learners grow as whole people, not only as exam candidates.",
+    image: "/images/listings/school-fees/01.jpg",
+    imageAlt: "Representative learner taking part confidently in class",
+    imageSource: "representative",
+    accent: "#d59a25",
+    activities: ["Public speaking, essay writing and academic challenges", "Mentorship across sciences, social sciences and the arts", "Scholarship and learning-material support when confirmed"],
+    intendedOutcomes: ["Greater academic confidence", "Stronger leadership and communication", "More exposure to practical skills and heritage"],
+    measurements: ["Learner participation", "Mentorship hours", "Scholarships and materials allocated"],
+    relatedPackageIds: ["school-supplies", "school-fees", "mentor"],
+  },
+  {
+    id: "family-experience",
+    number: "03",
+    name: "TI Family Experience",
+    kicker: "Ordinary moments of belonging",
+    summary: "Shared meals, visits and familiar moments with children, families and older neighbours.",
+    overview: "Family Experience centres the things that make care feel human: preparing food together, listening, playing, visiting and sharing time without turning anyone into a campaign prop.",
+    image: "/images/authentic/2025-04-smiles/04.webp",
+    imageAlt: "Tuokoleane volunteers and children dancing together during a family activity",
+    imageSource: "archive",
+    accent: "#d35f42",
+    activities: ["Family-style visits and shared meals", "Storytelling, games, movie nights and self-care activities", "Useful hampers and a larger family festival"],
+    intendedOutcomes: ["More ordinary moments of joy", "Stronger relationships and trust", "Practical care shaped with families"],
+    measurements: ["Activities coordinated", "Family participation and feedback", "Useful goods matched to confirmed needs"],
+    relatedPackageIds: ["meal", "cook-family", "elder-visit", "clothes"],
+  },
+  {
+    id: "culinary-hub",
+    number: "04",
+    name: "TI Culinary Hub",
+    kicker: "Culture shared around one table",
+    summary: "Different cultures around one table, learning through food and story.",
+    overview: "The Culinary Hub uses food as a practical connector. People can prepare indigenous meals, learn the stories behind them and share ingredients, skills and conversation across generations.",
+    image: "/images/authentic/2025-04-family-day/04.webp",
+    imageAlt: "A Tuokoleane volunteer preparing food during a community family day",
+    imageSource: "archive",
+    accent: "#3f8f68",
+    activities: ["Indigenous cooking showcases and tastings", "Ingredient and kitchen support", "Food stories, recipes and intergenerational learning"],
+    intendedOutcomes: ["Cultural knowledge carried forward", "More shared skills and confidence", "Stronger connection through food"],
+    measurements: ["Meals and showcases held", "Recipes or stories documented", "Participants and ingredients supported"],
+    relatedPackageIds: ["meal", "cook-family", "food-shelf"],
+  },
+  {
+    id: "familyfit",
+    number: "05",
+    name: "TI FamilyFit",
+    kicker: "Wellness that feels social",
+    summary: "Practical wellness through movement, nutrition and preventive care.",
+    overview: "FamilyFit makes wellness more approachable by turning it into something people do together. Activities range from movement and hydration to practical education, with qualified partners required for clinical checks or blood donation.",
+    image: "/images/listings/wellness-day/01.jpg",
+    imageAlt: "Representative mixed-age community exercise session outdoors",
+    imageSource: "representative",
+    accent: "#2e7f83",
+    activities: ["Hikes, yoga, cycling, dance and aerobics", "Nutrition and hydration workshops", "Preventive health activities with qualified partners"],
+    intendedOutcomes: ["More consistent movement", "Better practical wellness knowledge", "Stronger social support around healthy habits"],
+    measurements: ["Activities and attendance", "Participant feedback", "Qualified partner-led checks when available"],
+    relatedPackageIds: ["wellness-day", "tree"],
+  },
+  {
+    id: "sharefest",
+    number: "06",
+    name: "TI ShareFest",
+    kicker: "The family gets together",
+    summary: "A nature-based gathering where the programmes, people and cultures meet.",
+    overview: "ShareFest is conceived as a three-day Family Get-Together: part celebration, part showcase and part shared retreat. It creates one place for music, games, food, stories and the wider Tuokoleane family.",
+    image: "/images/authentic/2025-04-smiles/01.webp",
+    imageAlt: "Tuokoleane community members smiling together at a shared event",
+    imageSource: "archive",
+    accent: "#c17628",
+    activities: ["Programme showcases and cultural activities", "Nature walks, games and open-mic moments", "Bonfires and shared meals"],
+    intendedOutcomes: ["A stronger sense of one big family", "More visibility across programmes", "Deeper volunteer and community connection"],
+    measurements: ["Participants and programme representation", "Volunteer involvement", "Feedback and follow-up actions"],
+    relatedPackageIds: ["meal", "listen", "tree", "cook-family"],
+  },
+  {
+    id: "family-units",
+    number: "07",
+    name: "TI Family Units",
+    kicker: "Care organised close to home",
+    summary: "Local communities built around sharing resources and looking after one another.",
+    overview: "Family Units are small local groups in neighbourhoods, universities and colleges. Each unit can organise shared resources, social activities and practical support around needs its own members understand.",
+    image: "/images/listings/food-shelf/01.jpg",
+    imageAlt: "Representative neighbours organising a shared community food shelf",
+    imageSource: "representative",
+    accent: "#3e6794",
+    activities: ["Shared food stores and useful resources", "Locally governed trust funds and leadership", "Social, wellness and community-care activities"],
+    intendedOutcomes: ["Faster local coordination", "More accountable shared resources", "Stronger everyday mutual support"],
+    measurements: ["Active units and members", "Resources contributed and allocated", "Local activities completed"],
+    relatedPackageIds: ["food-shelf", "elder-visit", "clothes"],
+  },
 ];

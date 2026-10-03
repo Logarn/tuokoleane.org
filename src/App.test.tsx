@@ -42,6 +42,26 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("button", { name: "Show all photos" })).toBeInTheDocument();
   });
 
+  it("opens an expanded initiative on its own route", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("link", { name: "Explore TI ShareSphere" }));
+
+    expect(window.location.pathname).toBe("/program/sharesphere");
+    expect(screen.getByRole("heading", { name: "TI ShareSphere", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What happens here" })).toBeInTheDocument();
+  });
+
+  it("renders a new cause listing on a direct route", () => {
+    window.history.replaceState({}, "", "/listing/food-shelf");
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Stock a Family Unit food shelf", level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
+    expect(screen.getAllByText("Ksh 1,800")).toHaveLength(2);
+  });
+
   it("adds a fixed-price package from its detail page", async () => {
     window.history.replaceState({}, "", "/listing/meal");
     const user = userEvent.setup();

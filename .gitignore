@@ -3,6 +3,8 @@ dist/
 .vercel/
 .playwright-cli/
 output/playwright/
+output/contact-sheets/
+tmp/source-docs/
 *.tsbuildinfo
 .vercel
 .env*
