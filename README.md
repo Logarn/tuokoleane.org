@@ -10,6 +10,7 @@ An interactive MVP for Tuokoleane Initiative’s “Amazon of Charity” idea: p
 - Four-image listing galleries with representative prototype photography
 - Seven photo-led initiative pages under `/program/:id`
 - A reduced-motion-friendly reach marquee for campuses and counties
+- Brand-faithful desktop favicons and mobile home-screen icons
 - Fixed-price, custom-amount and time-based packages
 - Persistent local basket with quantity controls
 - Responsive listing, gallery, checkout and confirmation flows
