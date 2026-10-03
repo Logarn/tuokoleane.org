@@ -20,7 +20,7 @@ An interactive MVP for Tuokoleane Initiative’s “Amazon of Charity” idea: p
 
 The blue Tuokoleane logo is rendered from the organization-supplied PDF. Listing photographs are AI-generated representative imagery for the prototype; they are not beneficiary records or evidence of completed Tuokoleane activities. Selected initiative cards use real photographs supplied through Tuokoleane Initiative’s public Instagram archive and are labelled as archive photography in the interface.
 
-The campus and county reach strip currently uses typographic name marks rather than third-party logos. This avoids implying endorsement or exceeding a named institution’s brand-use permission until Tuokoleane confirms written authorization.
+The campus and county reach strip uses locally stored official logo assets sourced from each institution’s or county government’s public website. `public/images/reach/sources.json` records the source of every mark. The interface retains a clear note that inclusion indicates a place or community reached and does not imply institutional endorsement.
 
 ## Importing organization archive photography
 

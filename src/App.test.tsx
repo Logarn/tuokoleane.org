@@ -30,6 +30,15 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
 
+  it("renders official institution and county logos in the reach strip", () => {
+    const { container } = render(<App />);
+    const logos = [...container.querySelectorAll<HTMLImageElement>(".reach-logo")];
+
+    expect(logos).toHaveLength(18);
+    expect(logos.every((logo) => logo.src.includes("/images/reach/"))).toBe(true);
+    expect(logos.filter((logo) => logo.alt === "University of Nairobi official logo")).toHaveLength(2);
+  });
+
   it("opens each package on its own route", async () => {
     const user = userEvent.setup();
     render(<App />);

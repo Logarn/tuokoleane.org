@@ -44,15 +44,15 @@ const packageById = new Map(kindnessPackages.map((item) => [item.id, item]));
 const programById = new Map(programs.map((program) => [program.id, program]));
 
 const placesReached = [
-  { short: "MKU", name: "Mount Kenya University" },
-  { short: "PU", name: "Pwani University" },
-  { short: "UoN", name: "University of Nairobi" },
-  { short: "JKUAT", name: "Jomo Kenyatta University of Agriculture and Technology" },
-  { short: "Kwale", name: "Kwale County" },
-  { short: "Kisii", name: "Kisii County" },
-  { short: "Machakos", name: "Machakos County" },
-  { short: "Kisumu", name: "Kisumu County" },
-  { short: "Kakamega", name: "Kakamega County" },
+  { name: "Mount Kenya University", logo: "/images/reach/mku.png" },
+  { name: "Pwani University", logo: "/images/reach/pwani.png" },
+  { name: "University of Nairobi", logo: "/images/reach/uon.png" },
+  { name: "Jomo Kenyatta University of Agriculture and Technology", logo: "/images/reach/jkuat.png" },
+  { name: "Kwale County", logo: "/images/reach/kwale.png" },
+  { name: "Kisii County", logo: "/images/reach/kisii.png" },
+  { name: "Machakos County", logo: "/images/reach/machakos.webp" },
+  { name: "Kisumu County", logo: "/images/reach/kisumu.webp" },
+  { name: "Kakamega County", logo: "/images/reach/kakamega.png" },
 ];
 
 function packagePrice(item: KindnessPackage) {
@@ -346,7 +346,8 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
               <div className="reach-set" key={set} aria-hidden={set === 1}>
                 {placesReached.map((place) => (
                   <span className="reach-mark" key={`${set}-${place.name}`}>
-                    <b>{place.short}</b><span>{place.name}</span>
+                    <img className="reach-logo" src={place.logo} alt={`${place.name} official logo`} />
+                    <span>{place.name}</span>
                   </span>
                 ))}
               </div>

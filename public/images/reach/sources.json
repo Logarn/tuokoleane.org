@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Mount Kenya University",
+    "file": "mku.png",
+    "source": "https://mku.ac.ke/wp-content/uploads/2021/03/Mount-Kenya-University-Logo.png"
+  },
+  {
+    "name": "Pwani University",
+    "file": "pwani.png",
+    "source": "https://www.pu.ac.ke/images/pwani-university-logo1.png"
+  },
+  {
+    "name": "University of Nairobi",
+    "file": "uon.png",
+    "source": "https://www.uonbi.ac.ke/sites/default/files/UoN_Logo.png"
+  },
+  {
+    "name": "Jomo Kenyatta University of Agriculture and Technology",
+    "file": "jkuat.png",
+    "source": "https://www.jkuat.ac.ke/wp-content/uploads/2026/09/jkuat-logo.png"
+  },
+  {
+    "name": "Kwale County",
+    "file": "kwale.png",
+    "source": "https://kwale.go.ke/wp-content/uploads/2023/08/Kwale-County-Logo-before-footer.png"
+  },
+  {
+    "name": "Kisii County",
+    "file": "kisii.png",
+    "source": "https://kisii.go.ke/wp-content/uploads/2026/06/KISII-COUNTY-LOGO-IDENTITY-1-scaled-e1781272909824.png"
+  },
+  {
+    "name": "Machakos County",
+    "file": "machakos.webp",
+    "source": "https://machakos.go.ke/wp-content/uploads/2020/07/County-Government-of-Machakos.webp"
+  },
+  {
+    "name": "Kisumu County",
+    "file": "kisumu.webp",
+    "source": "https://www.kisumu.go.ke/wp-content/uploads/logo-370x362_c.webp"
+  },
+  {
+    "name": "Kakamega County",
+    "file": "kakamega.png",
+    "source": "https://kakamega.go.ke/wp-content/uploads/2016/01/logo.png"
+  }
+]

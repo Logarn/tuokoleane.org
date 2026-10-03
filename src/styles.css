@@ -125,8 +125,8 @@ img { display: block; max-width: 100%; }
 .reach-track { width: max-content; display: flex; animation: reach-scroll 42s linear infinite; }
 .reach-marquee:hover .reach-track, .reach-marquee:focus-within .reach-track { animation-play-state: paused; }
 .reach-set { display: flex; align-items: stretch; gap: 12px; padding-right: 12px; }
-.reach-mark { width: 250px; min-height: 82px; display: grid; grid-template-columns: 58px 1fr; align-items: center; gap: 15px; padding: 14px 18px; border: 1px solid var(--soft-line); border-radius: 14px; background: #fafafa; }
-.reach-mark b { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--brand-soft); color: var(--brand); font-size: 12px; letter-spacing: -.02em; text-align: center; }
+.reach-mark { width: 286px; min-height: 94px; display: grid; grid-template-columns: 104px 1fr; align-items: center; gap: 16px; padding: 14px 18px; border: 1px solid var(--soft-line); border-radius: 14px; background: #fff; }
+.reach-logo { width: 104px; height: 58px; object-fit: contain; object-position: center; }
 .reach-mark > span { color: #4e4e4e; font-size: 12px; font-weight: 700; line-height: 1.35; }
 .reach-note { margin-top: 17px; margin-bottom: 0; color: #858585; font-size: 10px; line-height: 1.5; }
 @keyframes reach-scroll { to { transform: translateX(-50%); } }
@@ -451,7 +451,8 @@ img { display: block; max-width: 100%; }
   .home-hero-copy h1 { max-width: 650px; }
   .reach-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .reach-heading h2 { max-width: 620px; text-align: left; }
-  .reach-mark { width: 225px; }
+  .reach-mark { width: 264px; grid-template-columns: 92px 1fr; }
+  .reach-logo { width: 92px; }
   .values-infographic { grid-template-columns: 1fr; }
   .value-card-primary { grid-column: auto; }
   .model-stats { grid-template-columns: 1fr; }
@@ -503,8 +504,8 @@ img { display: block; max-width: 100%; }
   .hero-proof { flex-wrap: wrap; row-gap: 8px; }
   .reach-section { padding-top: 38px; }
   .reach-heading h2 { font-size: 32px; }
-  .reach-mark { width: 208px; min-height: 74px; grid-template-columns: 48px 1fr; padding: 11px 14px; }
-  .reach-mark b { width: 44px; height: 44px; font-size: 10px; }
+  .reach-mark { width: 246px; min-height: 82px; grid-template-columns: 84px 1fr; padding: 11px 14px; }
+  .reach-logo { width: 84px; height: 52px; }
   .values-section { padding-top: 80px; }
   .values-heading h2 { font-size: 41px; line-height: 1.02; }
   .values-heading h2 span, .values-heading h2 span:nth-child(2), .values-heading h2 span:nth-child(3) { width: auto; margin-inline: 0; }
