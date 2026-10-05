@@ -39,6 +39,17 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(logos.filter((logo) => logo.alt === "University of Nairobi official logo")).toHaveLength(2);
   });
 
+  it("shows the organisation's direct contact details", () => {
+    render(<App />);
+
+    expect(screen.getByRole("link", { name: "tuokoleaneinitiative@gmail.com" })).toHaveAttribute("href", "mailto:tuokoleaneinitiative@gmail.com");
+    expect(screen.getByRole("link", { name: "+254 40 603626" })).toHaveAttribute("href", "tel:+25440603626");
+    expect(screen.getByRole("link", { name: "Instagram" })).toHaveAttribute("href", "https://www.instagram.com/tuokoleane_initiative/");
+    expect(screen.getByRole("link", { name: "Facebook" })).toHaveAttribute("href", "https://www.facebook.com/Tuokoleane_Initiative");
+    expect(screen.getByRole("link", { name: "TikTok" })).toHaveAttribute("href", "https://www.tiktok.com/@tuokoleane_initiative");
+    expect(screen.getByText("@Tuokoleane_Initiative")).toBeInTheDocument();
+  });
+
   it("opens each package on its own route", async () => {
     const user = userEvent.setup();
     render(<App />);

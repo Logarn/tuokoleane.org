@@ -771,6 +771,17 @@ function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => v
         <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a><a href="/#values" onClick={(event) => homeLink(event, "values")}>Our values</a></div>
         <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/wellness-day" onClick={(event) => { event.preventDefault(); onNavigate("/listing/wellness-day"); }}>Back a wellness day</a></div>
         <div><strong>Learn</strong><a href="/program/sharesphere" onClick={(event) => { event.preventDefault(); onNavigate("/program/sharesphere"); }}>ShareSphere</a><a href="/program/family-units" onClick={(event) => { event.preventDefault(); onNavigate("/program/family-units"); }}>Family Units</a><a href="https://tuokoleane.org">Main website</a></div>
+        <div className="footer-contact">
+          <strong>Contact</strong>
+          <a href="mailto:tuokoleaneinitiative@gmail.com">tuokoleaneinitiative@gmail.com</a>
+          <a href="tel:+25440603626">+254 40 603626</a>
+          <div className="footer-social-links">
+            <a href="https://www.instagram.com/tuokoleane_initiative/" target="_blank" rel="noreferrer">Instagram</a>
+            <a href="https://www.facebook.com/Tuokoleane_Initiative" target="_blank" rel="noreferrer">Facebook</a>
+            <a href="https://www.tiktok.com/@tuokoleane_initiative" target="_blank" rel="noreferrer">TikTok</a>
+          </div>
+          <span>@Tuokoleane_Initiative</span>
+        </div>
       </div>
       <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Archive and representative imagery · No payments</span></div>
     </footer>
