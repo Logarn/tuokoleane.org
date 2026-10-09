@@ -19,6 +19,18 @@ describe("Tuokoleane kindness marketplace", () => {
     vi.restoreAllMocks();
   });
 
+  it("leads with the kindness marketplace proposition", () => {
+    render(<App />);
+
+    expect(screen.getByRole("heading", {
+      name: "What if touching a life was as easy as shopping online?",
+      level: 1,
+    })).toBeInTheDocument();
+    expect(screen.getByText("Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.")).toBeInTheDocument();
+    expect(screen.getByText("Charity should not have opening hours.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Browse ways to help" })).toBeInTheDocument();
+  });
+
   it("filters the catalogue by category", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -40,14 +52,57 @@ describe("Tuokoleane kindness marketplace", () => {
   });
 
   it("shows the organisation's direct contact details", () => {
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.getByRole("link", { name: "tuokoleaneinitiative@gmail.com" })).toHaveAttribute("href", "mailto:tuokoleaneinitiative@gmail.com");
-    expect(screen.getByRole("link", { name: "+254 40 603626" })).toHaveAttribute("href", "tel:+25440603626");
-    expect(screen.getByRole("link", { name: "Instagram" })).toHaveAttribute("href", "https://www.instagram.com/tuokoleane_initiative/");
-    expect(screen.getByRole("link", { name: "Facebook" })).toHaveAttribute("href", "https://www.facebook.com/Tuokoleane_Initiative");
-    expect(screen.getByRole("link", { name: "TikTok" })).toHaveAttribute("href", "https://www.tiktok.com/@tuokoleane_initiative");
-    expect(screen.getByText("@Tuokoleane_Initiative")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+254 740 603 626" })).toHaveAttribute("href", "tel:+254740603626");
+    expect(screen.getByRole("link", { name: "Tuokoleane Initiative on Instagram" })).toHaveAttribute("href", "https://www.instagram.com/tuokoleaneinitiative/");
+    expect(screen.getByRole("link", { name: "Tuokoleane Initiative on Facebook" })).toHaveAttribute("href", "https://www.facebook.com/profile.php?id=100077672700363");
+    expect(screen.queryByRole("link", { name: /TikTok/i })).not.toBeInTheDocument();
+    expect(container.querySelector(".footer-social-links")?.textContent).toBe("");
+    expect(screen.queryByText("@Tuokoleane_Initiative")).not.toBeInTheDocument();
+    expect(container.querySelector(".footer-symbol")).toHaveAttribute("src", "/icons/android-chrome-192x192.png");
+  });
+
+  it("shows five campaign cards and opens a detailed idea", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const cards = [...container.querySelectorAll<HTMLButtonElement>(".campaign-card")];
+
+    expect(screen.getByRole("heading", { name: "Kindness becomes real when it becomes specific." })).toBeInTheDocument();
+    expect(cards).toHaveLength(5);
+    expect(cards.every((card) => card.querySelector("img")?.getAttribute("loading") === "lazy")).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: "Read A good heart should not need an event." }));
+
+    const dialog = screen.getByRole("dialog", { name: "A good heart should not need an event." });
+    expect(within(dialog).getByText("Human need does not keep that calendar.", { exact: false })).toBeInTheDocument();
+    expect(within(dialog).getByText("Charity should not have opening hours.")).toBeInTheDocument();
+    expect(document.body.style.overflow).toBe("hidden");
+
+    await user.click(within(dialog).getByRole("button", { name: "Close idea" }));
+    expect(screen.queryByRole("dialog", { name: "A good heart should not need an event." })).not.toBeInTheDocument();
+  });
+
+  it("shows the TI archive gallery and opens the full photo viewer", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Tuokoleane Initiative Gallery" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(18);
+    expect([...container.querySelectorAll<HTMLImageElement>(".ti-gallery-card img")]
+      .every((image) => image.getAttribute("loading") === "lazy")).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 56" }));
+    const dialog = screen.getByRole("dialog", { name: "Family Experience" });
+    expect(within(dialog).getByText("1 / 56")).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "Next gallery photo" }));
+    expect(within(dialog).getByText("2 / 56")).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "Close gallery photo" }));
+    await user.click(screen.getByRole("button", { name: "View all 56 photos" }));
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(56);
   });
 
   it("opens each package on its own route", async () => {

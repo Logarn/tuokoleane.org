@@ -34,6 +34,24 @@ interface Confirmation {
   itemCount: number;
 }
 
+interface CampaignIdea {
+  number: string;
+  kicker: string;
+  title: string;
+  teaser: string;
+  description: string[];
+  takeaway: string;
+  image: string;
+  imageAlt: string;
+  accent: string;
+}
+
+interface GalleryPhoto {
+  src: string;
+  alt: string;
+  collection: "Annual Sharing Day" | "Family Experience";
+}
+
 const currency = new Intl.NumberFormat("en-KE", {
   style: "currency",
   currency: "KES",
@@ -54,6 +72,109 @@ const placesReached = [
   { name: "Kisumu County", logo: "/images/reach/kisumu.webp" },
   { name: "Kakamega County", logo: "/images/reach/kakamega.png" },
 ];
+
+const campaignIdeas: CampaignIdea[] = [
+  {
+    number: "01",
+    kicker: "Help today",
+    title: "A good heart should not need an event.",
+    teaser: "Someone should not have to wait for a fundraiser, a disaster or the right season before help arrives.",
+    description: [
+      "Most giving is organised around moments: a drive, a gala or a crisis. Human need does not keep that calendar.",
+      "Tuokoleane is building a simpler path. Open the catalogue, choose one useful act and see what happens next. If you can help today, there should be a way to begin today.",
+    ],
+    takeaway: "Charity should not have opening hours.",
+    image: "/images/campaign-posters/01-help-today.jpg",
+    imageAlt: "Concept artwork of a Kenyan woman opening a gate to offer help to a neighbour",
+    accent: "#d92879",
+  },
+  {
+    number: "02",
+    kicker: "The Amazon of Charity",
+    title: "What if helping felt this simple?",
+    teaser: "Find a practical way to help, understand what it means and choose the contribution that fits you.",
+    description: [
+      "Online shopping made it easy to find almost anything. Helping someone should be just as clear, without reducing a human life to a transaction.",
+      "This is about turning good intentions into practical, dignified choices: a meal, school support, time, knowledge or care. You choose the act. Tuokoleane makes the path visible.",
+    ],
+    takeaway: "Choose one act. Know what it means. Start.",
+    image: "/images/campaign-posters/02-amazon-of-charity.jpg",
+    imageAlt: "Concept artwork of hands choosing different ways to help around a table",
+    accent: "#25368a",
+  },
+  {
+    number: "03",
+    kicker: "You already have something",
+    title: "The world is waiting for what you can give.",
+    teaser: "Your most useful contribution may be time, knowledge, food, money or one honest conversation.",
+    description: [
+      "You do not need to be wealthy, famous or perfectly prepared to improve someone’s day. You need something useful and the willingness to offer it.",
+      "Tuokoleane makes room for different kinds of generosity. Give what you can, in a form that helps, with dignity at the centre.",
+    ],
+    takeaway: "You do not need everything. Start with something.",
+    image: "/images/campaign-posters/03-world-is-waiting.jpg",
+    imageAlt: "Concept artwork of a Kenyan community gathered outdoors at golden hour",
+    accent: "#c94932",
+  },
+  {
+    number: "04",
+    kicker: "Why TI exists",
+    title: "Because we belong to one another.",
+    teaser: "Care should not stop at the edge of a family, campus, county or familiar face.",
+    description: [
+      "It is easy to assume someone else will step in. A relative. A neighbour. An institution. Belonging asks a more personal question: what can I do?",
+      "Tuokoleane exists to make that answer visible. One big family does not mean erasing our differences. It means refusing to look away when another person needs care.",
+    ],
+    takeaway: "Their life is not separate from ours.",
+    image: "/images/campaign-posters/04-we-belong.jpg",
+    imageAlt: "Concept artwork of several generations sharing a meal at one table",
+    accent: "#16806f",
+  },
+  {
+    number: "05",
+    kicker: "Angels Amongst Us",
+    title: "Do the good. Let the good be enough.",
+    teaser: "Show up. Make someone smile. Leave them more hopeful than you found them.",
+    description: [
+      "Not every act of kindness needs a camera, a caption or applause. Sometimes the most powerful care protects a person’s privacy and asks for nothing back.",
+      "That is the TI way: help without making yourself the hero. Create a moment of relief, dignity or hope, then let the impact belong to the person who received it.",
+    ],
+    takeaway: "Become the reason someone believes in people again.",
+    image: "/images/campaign-posters/05-angels-among-us.jpg",
+    imageAlt: "Concept artwork of a volunteer leaving after a quiet act of care",
+    accent: "#8d3e8f",
+  },
+];
+
+const familyExperiencePhotoNumbers = new Set([
+  3, 5, 12, 15, 21, 25, 26, 32, 33, 34, 38, 39, 40, 45, 46, 47, 48, 51, 52, 57, 58, 59, 60, 64, 68, 72, 73,
+]);
+
+const featuredGalleryPhotoNumbers = [
+  51, 10, 40, 6, 57, 29, 35, 59, 37, 65, 26, 13, 58, 16, 7, 68, 44, 73,
+];
+
+const duplicateGalleryPhotoNumbers = new Set([
+  22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71,
+]);
+
+const galleryPhotoNumbers = [
+  ...featuredGalleryPhotoNumbers,
+  ...Array.from({ length: 73 }, (_, index) => index + 1)
+    .filter((photoNumber) => !featuredGalleryPhotoNumbers.includes(photoNumber) && !duplicateGalleryPhotoNumbers.has(photoNumber)),
+];
+
+const galleryPhotos: GalleryPhoto[] = galleryPhotoNumbers.map((photoNumber, index) => {
+  const collection = familyExperiencePhotoNumbers.has(photoNumber)
+    ? "Family Experience"
+    : "Annual Sharing Day";
+
+  return {
+    src: `/images/ti-gallery/ti-gallery-${String(photoNumber).padStart(2, "0")}.jpg`,
+    alt: `Tuokoleane ${collection} archive photograph ${index + 1}`,
+    collection,
+  };
+});
 
 function packagePrice(item: KindnessPackage) {
   if (item.kind === "fixed") return currency.format(item.price ?? 0);
@@ -302,6 +423,15 @@ function Header({ basketCount, menuOpen, onBasket, onMenu, onNavigate }: HeaderP
 function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
+  const [selectedIdea, setSelectedIdea] = useState<CampaignIdea | null>(null);
+  const [galleryExpanded, setGalleryExpanded] = useState(false);
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView());
+  }, []);
 
   const filteredPackages = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -315,6 +445,47 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
     });
   }, [activeCategory, query]);
 
+  useEffect(() => {
+    if (!selectedIdea && selectedGalleryIndex === null) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedIdea(null);
+        setSelectedGalleryIndex(null);
+      }
+
+      if (selectedGalleryIndex === null) return;
+      if (event.key === "ArrowLeft") {
+        setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
+      }
+      if (event.key === "ArrowRight") {
+        setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedIdea, selectedGalleryIndex]);
+
+  const browseFromIdea = () => {
+    setSelectedIdea(null);
+    window.requestAnimationFrame(() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" }));
+  };
+
+  const visibleGalleryPhotos = galleryExpanded ? galleryPhotos : galleryPhotos.slice(0, 18);
+  const selectedGalleryPhoto = selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex];
+
+  const showPreviousGalleryPhoto = () => {
+    setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
+  };
+
+  const showNextGalleryPhoto = () => {
+    setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
+  };
+
   return (
     <main id="top">
       <section className="home-hero" aria-label="Tuokoleane Catalogue of Kindness">
@@ -322,11 +493,12 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-copy page-width">
           <p className="eyebrow"><Sparkles size={15} /> The catalogue of kindness</p>
-          <h1>Care should reach someone.</h1>
-          <p>Choose one practical act. Give money, time, knowledge or something useful. Tuokoleane coordinates what happens next.</p>
+          <h1>What if touching a life was as easy as shopping online?</h1>
+          <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.</p>
+          <p className="hero-always-open">Charity should not have opening hours.</p>
           <div className="hero-actions">
             <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
-              Find a way to help <ArrowRight size={18} />
+              Browse ways to help <ArrowRight size={18} />
             </button>
             <a href="#values" className="hero-text-link">What we stand for <ChevronRight size={17} /></a>
           </div>
@@ -444,12 +616,112 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         </div>
       </section>
 
+      <section className="campaign-section" aria-labelledby="campaign-title">
+        <div className="page-width">
+          <div className="campaign-heading">
+            <div><p className="eyebrow">Why this work matters</p><h2 id="campaign-title">Kindness becomes real when it becomes specific.</h2></div>
+            <p>Five reasons to stop waiting for the perfect moment and start with one useful act.</p>
+          </div>
+          <div className="campaign-grid" aria-label="Ideas behind Tuokoleane">
+            {campaignIdeas.map((idea) => (
+              <button className="campaign-card" onClick={() => setSelectedIdea(idea)} aria-haspopup="dialog" aria-label={`Read ${idea.title}`} style={{ "--campaign-accent": idea.accent } as React.CSSProperties} key={idea.number}>
+                <span className="campaign-card-media">
+                  <img src={idea.image} alt={idea.imageAlt} loading="lazy" decoding="async" />
+                  <b aria-hidden="true">{idea.number}</b>
+                </span>
+                <span className="campaign-card-body">
+                  <small>{idea.kicker}</small>
+                  <strong>{idea.title}</strong>
+                  <span>{idea.teaser}</span>
+                  <em>Read the idea <ChevronRight size={17} /></em>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="campaign-note">The people shown are concept artwork, not photographed beneficiaries or documented Tuokoleane activities.</p>
+        </div>
+      </section>
+
       <section className="manifesto-section">
         <div className="page-width manifesto-grid">
           <div><p className="eyebrow">The Tuokoleane way</p><h2>Do good without needing applause.</h2></div>
           <div><p>Help without turning someone’s life into a performance. Make the promise clear. Let the person receiving care keep their privacy, choices and voice.</p><button className="primary-button manifesto-button" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>Choose one useful act <ArrowRight size={18} /></button></div>
         </div>
       </section>
+
+      <section id="gallery" className="ti-gallery-section" aria-labelledby="ti-gallery-title">
+        <div className="page-width">
+          <div className="ti-gallery-heading">
+            <div>
+              <p className="eyebrow"><Images size={15} /> Real moments. One big family.</p>
+              <h2 id="ti-gallery-title">Tuokoleane Initiative Gallery</h2>
+            </div>
+            <p>Moments of welcome, shared time and community from the Tuokoleane Annual Sharing Day and TI Family Experience archives.</p>
+          </div>
+
+          <div className="ti-gallery-grid" aria-label="Tuokoleane Initiative photographs">
+            {visibleGalleryPhotos.map((photo, index) => (
+              <button
+                className="ti-gallery-card"
+                key={photo.src}
+                onClick={() => setSelectedGalleryIndex(index)}
+                aria-haspopup="dialog"
+                aria-label={`Open gallery photo ${index + 1} of ${galleryPhotos.length}`}
+              >
+                <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+                <span>{photo.collection}</span>
+              </button>
+            ))}
+          </div>
+
+          {!galleryExpanded && (
+            <div className="ti-gallery-more">
+              <button className="secondary-button" onClick={() => setGalleryExpanded(true)}>
+                <Images size={18} /> View all {galleryPhotos.length} photos
+              </button>
+              <p>Photographs from Tuokoleane Initiative shared archives.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {selectedIdea && (
+        <div className="campaign-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedIdea(null)}>
+          <section className="campaign-dialog" role="dialog" aria-modal="true" aria-labelledby={`campaign-dialog-title-${selectedIdea.number}`} style={{ "--campaign-accent": selectedIdea.accent } as React.CSSProperties}>
+            <button className="campaign-dialog-close" onClick={() => setSelectedIdea(null)} aria-label="Close idea" autoFocus><X size={21} /></button>
+            <div className="campaign-dialog-media">
+              <img src={selectedIdea.image} alt={selectedIdea.imageAlt} />
+              <span>Concept artwork</span>
+            </div>
+            <div className="campaign-dialog-copy">
+              <p className="eyebrow">{selectedIdea.number} · {selectedIdea.kicker}</p>
+              <h2 id={`campaign-dialog-title-${selectedIdea.number}`}>{selectedIdea.title}</h2>
+              <p className="campaign-dialog-lede">{selectedIdea.teaser}</p>
+              <div className="campaign-dialog-description">{selectedIdea.description.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
+              <blockquote>{selectedIdea.takeaway}</blockquote>
+              <button className="primary-button" onClick={browseFromIdea}>Browse practical ways to help <ArrowRight size={18} /></button>
+              <p className="campaign-dialog-note">This catalogue is a prototype. No payment, placement or fulfilled act is created.</p>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {selectedGalleryPhoto && selectedGalleryIndex !== null && (
+        <div className="ti-gallery-lightbox" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedGalleryIndex(null)}>
+          <section className="ti-gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="ti-gallery-dialog-title">
+            <button className="ti-gallery-close" onClick={() => setSelectedGalleryIndex(null)} aria-label="Close gallery photo" autoFocus><X size={22} /></button>
+            <button className="ti-gallery-previous" onClick={showPreviousGalleryPhoto} aria-label="Previous gallery photo"><ArrowLeft size={24} /></button>
+            <figure>
+              <img src={selectedGalleryPhoto.src} alt={selectedGalleryPhoto.alt} />
+              <figcaption>
+                <span id="ti-gallery-dialog-title">{selectedGalleryPhoto.collection}</span>
+                <strong>{selectedGalleryIndex + 1} / {galleryPhotos.length}</strong>
+              </figcaption>
+            </figure>
+            <button className="ti-gallery-next" onClick={showNextGalleryPhoto} aria-label="Next gallery photo"><ArrowRight size={24} /></button>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
@@ -761,26 +1033,44 @@ function NotFound({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
   return <main className="not-found page-width"><p className="eyebrow">Page not found</p><h1>This part of the catalogue is not available.</h1><p>The link may have changed, or the page may no longer be in this preview.</p><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Browse the catalogue</button></main>;
 }
 
+type SocialPlatform = "instagram" | "facebook";
+
+function SocialIcon({ platform }: { platform: SocialPlatform }) {
+  if (platform === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4.25" />
+        <circle className="social-icon-dot" cx="17.5" cy="6.5" r="1" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M14 8h3V4h-3c-3.1 0-5 1.9-5 5v3H6v4h3v8h4v-8h3.3l.7-4h-4V9c0-.7.3-1 1-1Z" />
+    </svg>
+  );
+}
+
 function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
   const homeLink = (event: React.MouseEvent<HTMLAnchorElement>, hash: string) => { event.preventDefault(); onNavigate("/", hash); };
   return (
     <footer className="site-footer">
       <div className="page-width footer-cta"><div><p className="eyebrow">Start somewhere useful</p><h2>One act is enough to begin.</h2></div><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Explore the catalogue <ArrowRight size={18} /></button></div>
       <div className="page-width footer-grid">
-        <div className="footer-brand"><span className="footer-logo-crop"><img src="/images/brand/tuokoleane-logo-blue.png" alt="Tuokoleane Initiative" /></span><p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that everyone should be treated with dignity.</p><span>Kenya · Give · Share · Care</span></div>
+        <div className="footer-brand"><img className="footer-symbol" src="/icons/android-chrome-192x192.png" alt="Tuokoleane Initiative symbol" /><p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that everyone should be treated with dignity.</p><span>Kenya · Give · Share · Care</span></div>
         <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a><a href="/#values" onClick={(event) => homeLink(event, "values")}>Our values</a></div>
         <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/wellness-day" onClick={(event) => { event.preventDefault(); onNavigate("/listing/wellness-day"); }}>Back a wellness day</a></div>
         <div><strong>Learn</strong><a href="/program/sharesphere" onClick={(event) => { event.preventDefault(); onNavigate("/program/sharesphere"); }}>ShareSphere</a><a href="/program/family-units" onClick={(event) => { event.preventDefault(); onNavigate("/program/family-units"); }}>Family Units</a><a href="https://tuokoleane.org">Main website</a></div>
         <div className="footer-contact">
           <strong>Contact</strong>
           <a href="mailto:tuokoleaneinitiative@gmail.com">tuokoleaneinitiative@gmail.com</a>
-          <a href="tel:+25440603626">+254 40 603626</a>
+          <a href="tel:+254740603626">+254 740 603 626</a>
           <div className="footer-social-links">
-            <a href="https://www.instagram.com/tuokoleane_initiative/" target="_blank" rel="noreferrer">Instagram</a>
-            <a href="https://www.facebook.com/Tuokoleane_Initiative" target="_blank" rel="noreferrer">Facebook</a>
-            <a href="https://www.tiktok.com/@tuokoleane_initiative" target="_blank" rel="noreferrer">TikTok</a>
+            <a href="https://www.instagram.com/tuokoleaneinitiative/" target="_blank" rel="noreferrer" aria-label="Tuokoleane Initiative on Instagram" title="Instagram"><SocialIcon platform="instagram" /></a>
+            <a href="https://www.facebook.com/profile.php?id=100077672700363" target="_blank" rel="noreferrer" aria-label="Tuokoleane Initiative on Facebook" title="Facebook"><SocialIcon platform="facebook" /></a>
           </div>
-          <span>@Tuokoleane_Initiative</span>
         </div>
       </div>
       <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Archive and representative imagery · No payments</span></div>
