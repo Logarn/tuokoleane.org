@@ -479,6 +479,8 @@ function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate 
 function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
   const [selectedIdea, setSelectedIdea] = useState<CampaignIdea | null>(null);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
   const [activeGalleryCollection, setActiveGalleryCollection] = useState<GalleryCollection>("All Photos");
@@ -501,6 +503,58 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
       return categoryMatches && queryMatches;
     });
   }, [activeCategory, query]);
+
+  const searchMatches = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return kindnessPackages;
+
+    return kindnessPackages.filter((item) => [
+      item.title,
+      item.shortDescription,
+      item.description,
+      item.category,
+      item.program,
+      item.label,
+    ].join(" ").toLowerCase().includes(normalizedQuery));
+  }, [query]);
+
+  const chooseSearchResult = (item: KindnessPackage) => {
+    setSearchOpen(false);
+    setActiveSearchIndex(-1);
+    onNavigate(`/listing/${item.id}`);
+  };
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Escape") {
+      setSearchOpen(false);
+      setActiveSearchIndex(-1);
+      return;
+    }
+
+    if (!searchMatches.length) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveSearchIndex((index) => Math.min(index + 1, searchMatches.length - 1));
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveSearchIndex((index) => index <= 0 ? 0 : index - 1);
+      return;
+    }
+
+    if (event.key === "Enter" && searchOpen) {
+      const selectedMatch = searchMatches[activeSearchIndex];
+      if (selectedMatch) {
+        event.preventDefault();
+        chooseSearchResult(selectedMatch);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!selectedIdea && selectedGalleryIndex === null) return;
@@ -614,11 +668,66 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           <h2>What do you have to give?</h2>
         </div>
         <div className="marketplace-toolbar">
-          <label className="search-field">
-            <Search size={18} />
-            <span className="sr-only">Search kindness packages</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search meals, school, trees…" />
-          </label>
+          <div
+            className="listing-search"
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setSearchOpen(false);
+                setActiveSearchIndex(-1);
+              }
+            }}
+          >
+            <label className="search-field">
+              <Search size={18} />
+              <span className="sr-only">Search kindness packages</span>
+              <input
+                type="search"
+                role="combobox"
+                aria-label="Search kindness packages"
+                aria-expanded={searchOpen}
+                aria-controls="listing-search-results"
+                aria-autocomplete="list"
+                aria-activedescendant={activeSearchIndex >= 0 ? `listing-search-option-${searchMatches[activeSearchIndex]?.id}` : undefined}
+                value={query}
+                onFocus={() => setSearchOpen(true)}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSearchOpen(true);
+                  setActiveSearchIndex(-1);
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search meals, school, trees…"
+              />
+            </label>
+            {searchOpen && (
+              <div className="listing-search-results" id="listing-search-results" role="listbox" aria-label="Listing search results">
+                {searchMatches.length ? searchMatches.map((item, index) => (
+                  <button
+                    type="button"
+                    role="option"
+                    id={`listing-search-option-${item.id}`}
+                    aria-selected={index === activeSearchIndex}
+                    className={index === activeSearchIndex ? "active" : ""}
+                    onMouseEnter={() => setActiveSearchIndex(index)}
+                    onClick={() => chooseSearchResult(item)}
+                    key={item.id}
+                  >
+                    <img src={item.images[0].src} alt="" />
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>{item.category} · {item.program}</small>
+                    </span>
+                    <b>{packagePrice(item)}</b>
+                  </button>
+                )) : (
+                  <div className="listing-search-empty">
+                    <Search size={18} />
+                    <span>No listings match “{query.trim()}”.</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <div className="category-tabs" aria-label="Filter by category">
             {categories.map((category) => (
               <button key={category} className={activeCategory === category ? "active" : ""} onClick={() => setActiveCategory(category)}>{category}</button>
@@ -1208,6 +1317,17 @@ function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => v
           </div>
         </div>
       </div>
+      <section className="page-width footer-payments" aria-labelledby="footer-payments-title">
+        <div>
+          <p className="eyebrow">Donation options</p>
+          <h2 id="footer-payments-title">We Support Donations Made Through</h2>
+        </div>
+        <div className="footer-payment-badges">
+          <img className="payment-badge-wide" src="/images/payment-badges/mpesa.svg" alt="M-PESA" loading="lazy" decoding="async" />
+          <img src="/images/payment-badges/tkash.jpg" alt="T-Kash" loading="lazy" decoding="async" />
+          <img src="/images/payment-badges/airtel-money.png" alt="Airtel Money" loading="lazy" decoding="async" />
+        </div>
+      </section>
       <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Archive and representative imagery · No payments</span></div>
     </footer>
   );

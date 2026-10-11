@@ -65,6 +65,38 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
 
+  it("searches listings in a dropdown and opens the selected result", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const search = screen.getByRole("combobox", { name: "Search kindness packages" });
+    await user.click(search);
+    await user.type(search, "school");
+
+    const results = screen.getByRole("listbox", { name: "Listing search results" });
+    expect(within(results).getAllByRole("option")).toHaveLength(2);
+    expect(within(results).getByRole("option", { name: /Sponsor school supplies/ })).toBeInTheDocument();
+    expect(within(results).getByRole("option", { name: /Support school fees/ })).toBeInTheDocument();
+
+    await user.click(within(results).getByRole("option", { name: /Support school fees/ }));
+
+    expect(window.location.pathname).toBe("/listing/school-fees");
+    expect(screen.getByRole("heading", { name: "Support school fees", level: 1 })).toBeInTheDocument();
+  });
+
+  it("supports keyboard selection in listing search", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const search = screen.getByRole("combobox", { name: "Search kindness packages" });
+    await user.click(search);
+    await user.type(search, "plant a tree");
+    await user.keyboard("{ArrowDown}{Enter}");
+
+    expect(window.location.pathname).toBe("/listing/tree");
+    expect(screen.getByRole("heading", { name: "Plant a tree", level: 1 })).toBeInTheDocument();
+  });
+
   it("features The TI Annual Gala first with its date and ticket price", () => {
     const { container } = render(<App />);
     const cards = [...container.querySelectorAll<HTMLElement>(".package-card")];
@@ -95,6 +127,15 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(container.querySelector(".footer-social-links")?.textContent).toBe("");
     expect(screen.queryByText("@Tuokoleane_Initiative")).not.toBeInTheDocument();
     expect(container.querySelector(".footer-symbol")).toHaveAttribute("src", "/icons/android-chrome-192x192.png");
+  });
+
+  it("shows supported donation methods with the HD M-PESA mark", () => {
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "We Support Donations Made Through" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "M-PESA" })).toHaveAttribute("src", "/images/payment-badges/mpesa.svg");
+    expect(screen.getByRole("img", { name: "T-Kash" })).toHaveAttribute("src", "/images/payment-badges/tkash.jpg");
+    expect(screen.getByRole("img", { name: "Airtel Money" })).toHaveAttribute("src", "/images/payment-badges/airtel-money.png");
   });
 
   it("shows five campaign cards and opens a detailed idea", async () => {
@@ -180,7 +221,7 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "The TI Annual Gala", level: 1 })).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
+    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(6);
     expect(screen.getAllByText("1 December 2027")).toHaveLength(2);
     expect(screen.getAllByText("Ksh 3,000")).toHaveLength(2);
 
