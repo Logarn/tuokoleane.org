@@ -27,8 +27,16 @@ describe("Tuokoleane kindness marketplace", () => {
       level: 1,
     })).toBeInTheDocument();
     expect(screen.getByText("Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.")).toBeInTheDocument();
-    expect(screen.getByText("Charity should not have opening hours.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Browse ways to help" })).toBeInTheDocument();
+    expect(screen.queryByText("The catalogue of kindness", { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "What we stand for" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Based in Kenya")).not.toBeInTheDocument();
+    expect(screen.queryByText("Money, time or goods")).not.toBeInTheDocument();
+    expect(screen.queryByText("Prototype experience. No payment is collected.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Names indicate places and communities reached. Inclusion does not imply institutional endorsement.")).not.toBeInTheDocument();
+    expect(screen.queryByText("The values behind every listing")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ways to take part")).not.toBeInTheDocument();
+    expect(screen.queryByText("Browse practical packages. Every one opens into its own page with the details and boundaries upfront.")).not.toBeInTheDocument();
   });
 
   it("filters the catalogue by category", async () => {
@@ -93,16 +101,16 @@ describe("Tuokoleane kindness marketplace", () => {
     expect([...container.querySelectorAll<HTMLImageElement>(".ti-gallery-card img")]
       .every((image) => image.getAttribute("loading") === "lazy")).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 56" }));
+    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 58" }));
     const dialog = screen.getByRole("dialog", { name: "Family Experience" });
-    expect(within(dialog).getByText("1 / 56")).toBeInTheDocument();
+    expect(within(dialog).getByText("1 / 58")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Next gallery photo" }));
-    expect(within(dialog).getByText("2 / 56")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 / 58")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Close gallery photo" }));
-    await user.click(screen.getByRole("button", { name: "View all 56 photos" }));
-    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(56);
+    await user.click(screen.getByRole("button", { name: "View all 58 photos" }));
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(58);
   });
 
   it("opens each package on its own route", async () => {
@@ -115,6 +123,7 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "Buy a meal", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "About this act of kindness" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show all photos" })).toBeInTheDocument();
+    expect(screen.queryByText("No payment, placement or beneficiary match is created.")).not.toBeInTheDocument();
   });
 
   it("opens an expanded initiative on its own route", async () => {
@@ -147,6 +156,85 @@ describe("Tuokoleane kindness marketplace", () => {
     const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
     expect(within(basketDialog).getByText("Buy a meal")).toBeInTheDocument();
     expect(within(basketDialog).getAllByText(/500/).length).toBeGreaterThan(0);
+  });
+
+  it("merges repeated fixed-price additions and updates quantity, totals and storage", async () => {
+    window.history.replaceState({}, "", "/listing/meal");
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+      .getByRole("button", { name: "Close basket" }));
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+
+    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    expect(container.querySelectorAll(".basket-item")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Open kindness basket with 2 items" })).toBeInTheDocument();
+    expect(within(basketDialog).getByText(/1,000/)).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
+      { packageId: "meal", quantity: 2, amount: 500 },
+    ]);
+
+    await user.click(within(basketDialog).getByRole("button", { name: "Remove one Buy a meal" }));
+    expect(within(basketDialog).getAllByText(/500/)).toHaveLength(2);
+
+    await user.click(within(basketDialog).getByRole("button", { name: "Remove one Buy a meal" }));
+    expect(within(basketDialog).getByRole("heading", { name: "Your basket is empty" })).toBeInTheDocument();
+  });
+
+  it("keeps different custom contribution amounts as separate basket lines", async () => {
+    window.history.replaceState({}, "", "/listing/school-fees");
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const amount = screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" });
+
+    await user.clear(amount);
+    await user.type(amount, "700");
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+      .getByRole("button", { name: "Close basket" }));
+    await user.clear(amount);
+    await user.type(amount, "900");
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+
+    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    expect(container.querySelectorAll(".basket-item")).toHaveLength(2);
+    expect(within(basketDialog).getByText(/1,600/)).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
+      { packageId: "school-fees", quantity: 1, amount: 700 },
+      { packageId: "school-fees", quantity: 1, amount: 900 },
+    ]);
+  });
+
+  it("adds a time commitment without increasing the money total", async () => {
+    window.history.replaceState({}, "", "/listing/listen");
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to my plan" }));
+
+    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    expect(within(basketDialog).getByText("Listen to someone")).toBeInTheDocument();
+    expect(within(basketDialog).getByText("Session based")).toBeInTheDocument();
+    expect(within(basketDialog).getByText(/Ksh\s*0/)).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
+      { packageId: "listen", quantity: 1, amount: 0 },
+    ]);
+  });
+
+  it("restores a valid basket from browser storage", async () => {
+    window.localStorage.setItem("ti-kindness-basket", JSON.stringify([
+      { packageId: "meal", quantity: 2, amount: 500 },
+    ]));
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Open kindness basket with 2 items" }));
+
+    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    expect(within(basketDialog).getByText("Buy a meal")).toBeInTheDocument();
+    expect(within(basketDialog).getByText(/1,000/)).toBeInTheDocument();
   });
 
   it("prevents a custom contribution below the demo minimum", async () => {

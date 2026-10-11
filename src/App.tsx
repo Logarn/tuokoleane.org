@@ -16,7 +16,6 @@ import {
   Share2,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Users,
   X,
 } from "lucide-react";
@@ -49,7 +48,7 @@ interface CampaignIdea {
 interface GalleryPhoto {
   src: string;
   alt: string;
-  collection: "Annual Sharing Day" | "Family Experience";
+  collection: "Annual Sharing Day" | "Family Experience" | "TI Moments";
 }
 
 const currency = new Intl.NumberFormat("en-KE", {
@@ -150,8 +149,15 @@ const familyExperiencePhotoNumbers = new Set([
   3, 5, 12, 15, 21, 25, 26, 32, 33, 34, 38, 39, 40, 45, 46, 47, 48, 51, 52, 57, 58, 59, 60, 64, 68, 72, 73,
 ]);
 
+const tiMomentsPhotoNumbers = new Set([74, 75]);
+
+const galleryPhotoAltByNumber = new Map([
+  [74, "Woman smiling while seated and holding a blue cup at a Tuokoleane gathering"],
+  [75, "Woman smiling in a black lace top at a Tuokoleane gathering"],
+]);
+
 const featuredGalleryPhotoNumbers = [
-  51, 10, 40, 6, 57, 29, 35, 59, 37, 65, 26, 13, 58, 16, 7, 68, 44, 73,
+  51, 75, 74, 10, 40, 29, 6, 57, 35, 65, 59, 13, 37, 26, 7, 68, 44, 73,
 ];
 
 const duplicateGalleryPhotoNumbers = new Set([
@@ -160,18 +166,20 @@ const duplicateGalleryPhotoNumbers = new Set([
 
 const galleryPhotoNumbers = [
   ...featuredGalleryPhotoNumbers,
-  ...Array.from({ length: 73 }, (_, index) => index + 1)
+  ...Array.from({ length: 75 }, (_, index) => index + 1)
     .filter((photoNumber) => !featuredGalleryPhotoNumbers.includes(photoNumber) && !duplicateGalleryPhotoNumbers.has(photoNumber)),
 ];
 
 const galleryPhotos: GalleryPhoto[] = galleryPhotoNumbers.map((photoNumber, index) => {
   const collection = familyExperiencePhotoNumbers.has(photoNumber)
     ? "Family Experience"
-    : "Annual Sharing Day";
+    : tiMomentsPhotoNumbers.has(photoNumber)
+      ? "TI Moments"
+      : "Annual Sharing Day";
 
   return {
     src: `/images/ti-gallery/ti-gallery-${String(photoNumber).padStart(2, "0")}.jpg`,
-    alt: `Tuokoleane ${collection} archive photograph ${index + 1}`,
+    alt: galleryPhotoAltByNumber.get(photoNumber) ?? `Tuokoleane ${collection} archive photograph ${index + 1}`,
     collection,
   };
 });
@@ -492,18 +500,11 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         <img className="home-hero-image" src="/images/listings/meal/02.jpg" alt="Representative scene of a family sharing a meal" />
         <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-copy page-width">
-          <p className="eyebrow"><Sparkles size={15} /> The catalogue of kindness</p>
           <h1>What if touching a life was as easy as shopping online?</h1>
           <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.</p>
-          <p className="hero-always-open">Charity should not have opening hours.</p>
-          <div className="hero-actions">
-            <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
-              Browse ways to help <ArrowRight size={18} />
-            </button>
-            <a href="#values" className="hero-text-link">What we stand for <ChevronRight size={17} /></a>
-          </div>
-          <div className="hero-proof"><span>Based in Kenya</span><i /><span>Money, time or goods</span><i /><span>From {currency.format(500)}</span></div>
-          <span className="prototype-note"><ShieldCheck size={17} /> Prototype experience. No payment is collected.</span>
+          <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
+            Browse ways to help <ArrowRight size={18} />
+          </button>
         </div>
       </section>
 
@@ -526,12 +527,10 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
             ))}
           </div>
         </div>
-        <p className="page-width reach-note">Names indicate places and communities reached. Inclusion does not imply institutional endorsement.</p>
       </section>
 
       <section className="values-section" id="values">
         <div className="page-width values-heading">
-          <p className="eyebrow">The values behind every listing</p>
           <h2><span>Dignity over display.</span><span>Clarity over vague promises.</span><span>Belonging over pity.</span></h2>
         </div>
         <div className="page-width values-infographic">
@@ -560,9 +559,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
 
       <section className="marketplace page-width" id="marketplace">
         <div className="section-heading">
-          <p className="eyebrow">Ways to take part</p>
           <h2>What do you have to give?</h2>
-          <p>Browse practical packages. Every one opens into its own page with the details and boundaries upfront.</p>
         </div>
         <div className="marketplace-toolbar">
           <label className="search-field">
@@ -656,7 +653,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
               <p className="eyebrow"><Images size={15} /> Real moments. One big family.</p>
               <h2 id="ti-gallery-title">Tuokoleane Initiative Gallery</h2>
             </div>
-            <p>Moments of welcome, shared time and community from the Tuokoleane Annual Sharing Day and TI Family Experience archives.</p>
+            <p>Moments of welcome, shared time and community from the Tuokoleane Annual Sharing Day, TI Family Experience and other shared TI moments.</p>
           </div>
 
           <div className="ti-gallery-grid" aria-label="Tuokoleane Initiative photographs">
@@ -945,7 +942,6 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
               {item.kind === "time" ? "Add to my plan" : "Add to basket"}
             </button>
             {item.kind === "custom" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)} for this demo.</p>}
-            <p className="scope-note"><ShieldCheck size={15} /> No payment, placement or beneficiary match is created.</p>
           </aside>
         </div>
 
