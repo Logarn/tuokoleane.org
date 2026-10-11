@@ -1,4 +1,4 @@
-import { donationCatalogueById } from "./donation-catalogue";
+import { donationCatalogueById } from "./donation-catalogue.js";
 
 export const TI_PAYMENT_DETAILS = {
   tillNumber: "9911113",

@@ -142,9 +142,7 @@
   .campaign-heading > p,
   .ti-gallery-heading > p,
   .program-hero-copy > p:not(.eyebrow),
-  .program-hero-media figcaption,
   .listing-heading > .listing-lede,
-  .photo-disclosure,
   .listing-intro p,
   .listing-highlights small,
   .impact-section li p,
@@ -306,7 +304,6 @@
 
   .package-photo-link > .package-badge,
   .package-event-date,
-  .program-card-photo > span,
   .campaign-dialog-media span {
     background: rgba(255, 255, 255, .94);
     color: #343844;
@@ -437,10 +434,6 @@
   .campaign-dialog-description,
   .campaign-dialog-note {
     color: var(--text-secondary);
-  }
-
-  .campaign-note {
-    color: #9299a9;
   }
 
   .campaign-dialog-lede {

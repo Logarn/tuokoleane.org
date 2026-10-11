@@ -377,12 +377,12 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getAllByText("Ksh 1,800")).toHaveLength(2);
   });
 
-  it("renders approved product listings with product-specific disclosure", () => {
+  it("renders approved product listings without visible image metadata", () => {
     window.history.replaceState({}, "", "/listing/school-shoes");
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Buy a pair of school shoes", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/official Bata Kenya product photos/)).toBeInTheDocument();
+    expect(screen.queryByText(/official Bata Kenya product photos/)).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
     expect(screen.getAllByText("Ksh 2,000")).toHaveLength(2);
   });

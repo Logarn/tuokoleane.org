@@ -895,7 +895,6 @@ function AboutPage({ onNavigate }: { onNavigate: (path: string, hash?: string) =
         </div>
         <figure className="program-hero-media">
           <img src="/images/ti-gallery/ti-gallery-51.jpg" alt="Tuokoleane community members spending time together" />
-          <figcaption>Tuokoleane archive photography</figcaption>
         </figure>
       </section>
 
@@ -921,7 +920,6 @@ function AboutPage({ onNavigate }: { onNavigate: (path: string, hash?: string) =
               </button>
             ))}
           </div>
-          <p className="campaign-note">These images are illustrations of the ideas. They are not photographs of people receiving support or records of completed TI activities.</p>
         </div>
       </section>
 
@@ -1110,7 +1108,6 @@ function ProgramCard({ program, onNavigate }: { program: Program; onNavigate: (p
     <article className={`program-card${program.featured ? " program-card-featured" : ""}`} style={{ "--program-accent": program.accent } as React.CSSProperties}>
       <a className="program-card-photo" href={path} onClick={open} aria-label={`Explore ${program.name}`}>
         <img src={program.image} alt={program.imageAlt} loading="lazy" decoding="async" />
-        <span>{program.imageSource === "archive" ? "From the TI archive" : "Illustrative image"}</span>
         {program.featured && <b className="program-featured-badge">Featured annual event</b>}
       </a>
       <div className="program-card-body">
@@ -1150,7 +1147,6 @@ function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (p
           </div>
           <figure className="program-hero-media">
             <img src={program.image} alt={program.imageAlt} />
-            <figcaption>{program.imageSource === "archive" ? "A real moment from the Tuokoleane archive, April 2025" : "An illustrative image, not a record of a completed TI activity"}</figcaption>
           </figure>
         </section>
 
@@ -1168,7 +1164,6 @@ function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (p
         {program.galleryImages && program.galleryImages.length > 0 && (
           <section className="program-gallery" aria-labelledby="program-gallery-title">
             <div className="section-heading">
-              <p className="eyebrow">From the TI archive</p>
               <h2 id="program-gallery-title">Moments from {program.name}.</h2>
             </div>
             <div className="program-gallery-grid">
@@ -1317,11 +1312,6 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           ))}
           <button className="show-photos" onClick={() => setGalleryOpen(true)}><Images size={17} /> Show all photos</button>
         </div>
-        <p className="photo-disclosure">
-          {item.imageDisclosure ?? (isEvent
-            ? "These Gala images include people from Tuokoleane’s real photo archive. They show how the event may feel, not a Gala that has already happened."
-            : "These images help show the idea. They are not photographs of named recipients or proof that the activity has already happened.")}
-        </p>
 
         <div className="listing-content-grid">
           <div className="listing-content">
