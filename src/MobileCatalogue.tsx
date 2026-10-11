@@ -5,7 +5,7 @@ import FavoriteButton from "./FavoriteButton";
 import "./mobile-catalogue.css";
 
 const ROW_COUNT = 3;
-const VISIBLE_COLUMNS = 2;
+const VISIBLE_COLUMNS = 1;
 
 interface MobileCatalogueProps {
   items: KindnessPackage[];

@@ -41,7 +41,7 @@ describe("MobileCatalogue", () => {
     expect(screen.queryByText("A practical way to help number 1.")).not.toBeInTheDocument();
   });
 
-  it("moves two columns at a time and disables controls at the boundaries", async () => {
+  it("moves one column at a time and disables controls at the boundaries", async () => {
     const user = userEvent.setup();
     render(<MobileCatalogue items={Array.from({ length: 13 }, (_, index) => makeItem(index + 1))} onNavigate={vi.fn()} />);
 
@@ -50,18 +50,24 @@ describe("MobileCatalogue", () => {
 
     expect(previous).toBeDisabled();
     expect(next).toBeEnabled();
-    expect(screen.getByText("Showing ways to help 1 to 6 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 1 to 3 of 13.")).toBeInTheDocument();
 
     await user.click(next);
     expect(previous).toBeEnabled();
-    expect(screen.getByText("Showing ways to help 7 to 12 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 4 to 6 of 13.")).toBeInTheDocument();
+
+    await user.click(next);
+    expect(screen.getByText("Showing ways to help 7 to 9 of 13.")).toBeInTheDocument();
+
+    await user.click(next);
+    expect(screen.getByText("Showing ways to help 10 to 12 of 13.")).toBeInTheDocument();
 
     await user.click(next);
     expect(next).toBeDisabled();
-    expect(screen.getByText("Showing ways to help 10 to 13 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 13 to 13 of 13.")).toBeInTheDocument();
 
     await user.click(previous);
-    expect(screen.getByText("Showing ways to help 4 to 9 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 10 to 12 of 13.")).toBeInTheDocument();
   });
 
   it("resets to the first columns when the item set changes", async () => {
@@ -69,7 +75,7 @@ describe("MobileCatalogue", () => {
     const { rerender } = render(<MobileCatalogue items={Array.from({ length: 13 }, (_, index) => makeItem(index + 1))} onNavigate={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: "Next ways to help" }));
-    expect(screen.getByText("Showing ways to help 7 to 12 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 4 to 6 of 13.")).toBeInTheDocument();
 
     rerender(<MobileCatalogue items={[makeItem(4), makeItem(5)]} onNavigate={vi.fn()} />);
 
@@ -84,14 +90,14 @@ describe("MobileCatalogue", () => {
     render(<MobileCatalogue items={Array.from({ length: 10 }, (_, index) => makeItem(index + 1))} onNavigate={onNavigate} />);
 
     expect(screen.getByRole("region", { name: "Ways to help" })).toHaveAttribute("aria-roledescription", "carousel");
-    expect(screen.getByText("Showing ways to help 1 to 6 of 10.")).toHaveAttribute("aria-live", "polite");
+    expect(screen.getByText("Showing ways to help 1 to 3 of 10.")).toHaveAttribute("aria-live", "polite");
     expect(screen.getByRole("button", { name: "Previous ways to help" })).toHaveAttribute("aria-controls");
     expect(screen.getByRole("button", { name: "Next ways to help" })).toHaveAttribute("aria-controls");
 
     const viewport = screen.getByRole("list", { name: "Swipe through ways to help" });
     viewport.focus();
     await user.keyboard("{ArrowRight}");
-    expect(screen.getByText("Showing ways to help 7 to 10 of 10.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 4 to 6 of 10.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: "View Kindness item 1, Ksh 500" }));
     expect(onNavigate).toHaveBeenCalledWith("/listing/item-1");
