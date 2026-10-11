@@ -133,9 +133,11 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "We Support Donations Made Through" })).toBeInTheDocument();
+    expect(screen.queryByText("Donation options")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "M-PESA" })).toHaveAttribute("src", "/images/payment-badges/mpesa.svg");
     expect(screen.getByRole("img", { name: "T-Kash" })).toHaveAttribute("src", "/images/payment-badges/tkash.jpg");
     expect(screen.getByRole("img", { name: "Airtel Money" })).toHaveAttribute("src", "/images/payment-badges/airtel-money.png");
+    expect(screen.queryByText("Prototype marketplace", { exact: false })).not.toBeInTheDocument();
   });
 
   it("shows five campaign cards and opens a detailed idea", async () => {
@@ -163,21 +165,22 @@ describe("Tuokoleane kindness marketplace", () => {
     const { container } = render(<App />);
 
     expect(screen.getByRole("heading", { name: "Tuokoleane Initiative Gallery" })).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(18);
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(5);
     expect([...container.querySelectorAll<HTMLImageElement>(".ti-gallery-card img")]
       .every((image) => image.getAttribute("loading") === "lazy")).toBe(true);
+    expect(container.querySelector('img[src="/images/ti-gallery/ti-gallery-17.jpg"]')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 56" }));
+    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 55" }));
     const dialog = screen.getByRole("dialog", { name: "Family Experience" });
-    expect(within(dialog).getByText("1 / 56")).toBeInTheDocument();
-    expect(within(dialog).getAllByRole("button", { name: /View photo/ })).toHaveLength(56);
+    expect(within(dialog).getByText("1 / 55")).toBeInTheDocument();
+    expect(within(dialog).getAllByRole("button", { name: /View photo/ })).toHaveLength(55);
 
     await user.click(within(dialog).getByRole("button", { name: "Next gallery photo" }));
-    expect(within(dialog).getByText("2 / 56")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 / 55")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Close gallery photo" }));
     await user.click(screen.getByRole("button", { name: /Family Experience.*25/ }));
-    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(18);
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(5);
     await user.click(screen.getByRole("button", { name: "View all 25 photos" }));
     expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(25);
   });

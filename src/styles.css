@@ -602,10 +602,9 @@ img { display: block; max-width: 100%; }
 .footer-social-links svg { width: 18px; height: 18px; overflow: visible; fill: currentColor; }
 .footer-social-links a:first-child svg { fill: none; stroke: currentColor; stroke-width: 1.8; }
 .footer-social-links .social-icon-dot { fill: currentColor; stroke: none; }
-.footer-payments { min-height: 142px; display: flex; align-items: center; justify-content: space-between; gap: 36px; padding-top: 24px; padding-bottom: 24px; border-top: 1px solid rgba(255,255,255,.14); }
-.footer-payments .eyebrow { margin-bottom: 8px; color: #c8daf4; }
-.footer-payments h2 { max-width: 420px; margin: 0; font-size: clamp(20px, 2.3vw, 30px); font-weight: 650; letter-spacing: -.025em; line-height: 1.12; }
-.footer-payment-badges { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.footer-payments { display: flex; align-items: flex-start; flex-direction: column; gap: 16px; padding-top: 28px; padding-bottom: 28px; border-top: 1px solid rgba(255,255,255,.14); }
+.footer-payments h2 { margin: 0; font-size: clamp(20px, 2.3vw, 30px); font-weight: 650; letter-spacing: -.025em; line-height: 1.12; }
+.footer-payment-badges { display: flex; align-items: center; justify-content: flex-start; gap: 12px; }
 .footer-payment-badges img { width: 72px; height: 72px; display: block; object-fit: cover; border: 7px solid white; border-radius: 16px; background: white; box-shadow: 0 8px 22px rgba(0,0,0,.18); }
 .footer-payment-badges img.payment-badge-wide { width: 126px; object-fit: contain; }
 .footer-bottom { display: flex; justify-content: space-between; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.48); font-size: 11px; }
@@ -692,8 +691,7 @@ img { display: block; max-width: 100%; }
   .footer-cta { min-height: 270px; align-items: flex-start; justify-content: center; flex-direction: column; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 45px; }
   .footer-brand { grid-column: 1 / 3; }
-  .footer-payments { align-items: flex-start; flex-direction: column; gap: 20px; padding-top: 34px; padding-bottom: 34px; }
-  .footer-payment-badges { justify-content: flex-start; }
+  .footer-payments { padding-top: 28px; padding-bottom: 28px; }
 }
 
 @media (max-width: 560px) {

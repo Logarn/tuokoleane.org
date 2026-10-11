@@ -163,8 +163,10 @@ const featuredGalleryPhotoNumbers = [
 ];
 
 const excludedGalleryPhotoNumbers = new Set([
-  21, 22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71, 73,
+  17, 21, 22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71, 73,
 ]);
+
+const collapsedGalleryPhotoCount = 5;
 
 const galleryPhotoNumbers = [
   ...featuredGalleryPhotoNumbers,
@@ -589,7 +591,9 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
   const filteredGalleryPhotos = activeGalleryCollection === "All Photos"
     ? galleryPhotos
     : galleryPhotos.filter((photo) => photo.collection === activeGalleryCollection);
-  const visibleGalleryPhotos = galleryExpanded ? filteredGalleryPhotos : filteredGalleryPhotos.slice(0, 18);
+  const visibleGalleryPhotos = galleryExpanded
+    ? filteredGalleryPhotos
+    : filteredGalleryPhotos.slice(0, collapsedGalleryPhotoCount);
   const selectedGalleryPhoto = selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex];
 
   const showPreviousGalleryPhoto = () => {
@@ -857,7 +861,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
             ))}
           </div>
 
-          {filteredGalleryPhotos.length > 18 && (
+          {filteredGalleryPhotos.length > collapsedGalleryPhotoCount && (
             <div className="ti-gallery-more">
               <button className="secondary-button" onClick={() => setGalleryExpanded((expanded) => !expanded)}>
                 <Images size={18} /> {galleryExpanded ? "Show fewer photos" : `View all ${filteredGalleryPhotos.length} photos`}
@@ -1318,17 +1322,14 @@ function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => v
         </div>
       </div>
       <section className="page-width footer-payments" aria-labelledby="footer-payments-title">
-        <div>
-          <p className="eyebrow">Donation options</p>
-          <h2 id="footer-payments-title">We Support Donations Made Through</h2>
-        </div>
+        <h2 id="footer-payments-title">We Support Donations Made Through</h2>
         <div className="footer-payment-badges">
           <img className="payment-badge-wide" src="/images/payment-badges/mpesa.svg" alt="M-PESA" loading="lazy" decoding="async" />
           <img src="/images/payment-badges/tkash.jpg" alt="T-Kash" loading="lazy" decoding="async" />
           <img src="/images/payment-badges/airtel-money.png" alt="Airtel Money" loading="lazy" decoding="async" />
         </div>
       </section>
-      <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span><span>Prototype marketplace · Archive and representative imagery · No payments</span></div>
+      <div className="page-width footer-bottom"><span>© {new Date().getFullYear()} Tuokoleane Initiative</span></div>
     </footer>
   );
 }
