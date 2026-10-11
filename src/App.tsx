@@ -22,6 +22,19 @@ import {
   X,
 } from "lucide-react";
 import { categories, kindnessPackages, programs, type KindnessPackage, type Program } from "./data";
+import {
+  TI_PAYMENT_DETAILS,
+  donationTotal,
+  isValidEmail,
+  isValidMpesaReference,
+  isValidPhone,
+  type DonationNotificationResponse,
+  type DonationSubmission,
+} from "./donations";
+import { BrandLogo } from "./BrandLogo";
+import FavoriteButton from "./FavoriteButton";
+import MobileCatalogue from "./MobileCatalogue";
+import MobilePrograms from "./MobilePrograms";
 
 interface BasketItem {
   packageId: string;
@@ -33,6 +46,9 @@ interface Confirmation {
   reference: string;
   email: string;
   itemCount: number;
+  total: number;
+  causes: string[];
+  mpesaReference: string;
 }
 
 interface CampaignIdea {
@@ -61,6 +77,12 @@ const currency = new Intl.NumberFormat("en-KE", {
 
 const packageById = new Map(kindnessPackages.map((item) => [item.id, item]));
 const programById = new Map(programs.map((program) => [program.id, program]));
+
+function createSubmissionReference() {
+  const randomPart = globalThis.crypto?.randomUUID?.().split("-")[0]
+    ?? Math.random().toString(36).slice(2, 10);
+  return `TI-${randomPart.toUpperCase()}`;
+}
 
 const placesReached = [
   { name: "Mount Kenya University", logo: "/images/reach/mku.png" },
@@ -252,8 +274,12 @@ function App() {
       ? `${routePackage.title} | Tuokoleane Initiative`
       : routeProgram
         ? `${routeProgram.name} | Tuokoleane Initiative`
-        : "Catalogue of Kindness | Tuokoleane Initiative";
-  }, [routePackage, routeProgram]);
+        : path === "/about"
+          ? "About TI | Tuokoleane Initiative"
+          : path === "/gallery"
+            ? "Gallery | Tuokoleane Initiative"
+            : "Catalogue of Kindness | Tuokoleane Initiative";
+  }, [path, routePackage, routeProgram]);
 
   const navigate = (nextPath: string, hash?: string) => {
     const destination = `${nextPath}${hash ? `#${hash}` : ""}`;
@@ -295,24 +321,42 @@ function App() {
   const basketCount = basket.reduce((total, item) => total + item.quantity, 0);
   const basketTotal = basket.reduce((total, item) => total + item.amount * item.quantity, 0);
 
-  const finishPledge = (email: string) => {
+  const finishDonation = async (submission: DonationSubmission) => {
+    const response = await fetch("/api/donations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(submission),
+    });
+    const result = await response.json().catch(() => null) as (DonationNotificationResponse & { error?: string }) | null;
+
+    if (!response.ok) {
+      throw new Error(result?.error ?? "We could not send your donation details. Please try again.");
+    }
+
     setCheckoutOpen(false);
     setConfirmation({
-      reference: `TI-${Date.now().toString().slice(-6)}`,
-      email,
+      reference: result?.reference ?? submission.reference,
+      email: submission.donor.email,
       itemCount: basketCount,
+      total: donationTotal(submission.items),
+      causes: submission.items.map((item) => item.title),
+      mpesaReference: submission.mpesaReference,
     });
     setBasket([]);
   };
 
   const isListingRoute = path.startsWith("/listing/");
   const isProgramRoute = path.startsWith("/program/");
+  const isAboutRoute = path === "/about";
+  const isGalleryRoute = path === "/gallery";
+  const isHomeRoute = path === "/";
 
   return (
     <div className="app-shell">
       <Header
         basketCount={basketCount}
-        expanded={!isListingRoute && !isProgramRoute}
+        currentPath={path}
+        expanded={isHomeRoute || isAboutRoute || isGalleryRoute}
         menuOpen={mobileMenuOpen}
         onBasket={() => setBasketOpen(true)}
         onMenu={() => setMobileMenuOpen((open) => !open)}
@@ -331,8 +375,14 @@ function App() {
         ) : (
           <NotFound onNavigate={navigate} />
         )
-      ) : (
+      ) : isAboutRoute ? (
+        <AboutPage onNavigate={navigate} />
+      ) : isGalleryRoute ? (
+        <GalleryPage />
+      ) : isHomeRoute ? (
         <HomePage onNavigate={navigate} />
+      ) : (
+        <NotFound onNavigate={navigate} />
       )}
 
       <Footer onNavigate={navigate} />
@@ -363,7 +413,7 @@ function App() {
             setBasketOpen(true);
           }}
           onClose={() => setCheckoutOpen(false)}
-          onSubmit={finishPledge}
+          onSubmit={finishDonation}
         />
       )}
 
@@ -371,12 +421,19 @@ function App() {
         <div className="modal-backdrop confirmation-backdrop" role="presentation">
           <section className="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title">
             <span className="success-icon"><Check size={32} /></span>
-            <p className="eyebrow">Demo pledge created</p>
-            <h2 id="confirmation-title">Your kindness plan is ready.</h2>
+            <p className="eyebrow">{confirmation.total > 0 ? "Donation details sent" : "Your interest was sent"}</p>
+            <h2 id="confirmation-title">Thank you for choosing to help.</h2>
             <p>
-              Reference <strong>{confirmation.reference}</strong> covers {confirmation.itemCount} {confirmation.itemCount === 1 ? "act" : "acts"}. No money was charged and no email was sent to {confirmation.email}.
+              Tuokoleane Initiative has received the details for {confirmation.itemCount} {confirmation.itemCount === 1 ? "act" : "acts"}. Your submission reference is <strong>{confirmation.reference}</strong>.
             </p>
-            <div className="confirmation-next"><strong>What production adds next</strong><span>Secure payment, verified allocation and real fulfilment updates.</span></div>
+            <div className="confirmation-next">
+              <strong>{confirmation.total > 0 ? "What happens now" : "The TI team will follow up"}</strong>
+              <span>
+                {confirmation.total > 0
+                  ? `TI will match M-PESA code ${confirmation.mpesaReference} with its payment records before confirming your ${confirmation.causes.join(", ")} donation by email.`
+                  : `TI will contact you at ${confirmation.email} to confirm fit, availability and next steps. No volunteer placement is confirmed until the team follows up.`}
+              </span>
+            </div>
             <button className="primary-button full" onClick={() => setConfirmation(null)}>Back to the marketplace</button>
           </section>
         </div>
@@ -387,6 +444,7 @@ function App() {
 
 interface HeaderProps {
   basketCount: number;
+  currentPath: string;
   expanded: boolean;
   menuOpen: boolean;
   onBasket: () => void;
@@ -397,22 +455,22 @@ interface HeaderProps {
 function Brand({ onNavigate }: { onNavigate: (path: string) => void }) {
   return (
     <a className="brand" href="/" onClick={(event) => { event.preventDefault(); onNavigate("/"); }} aria-label="Tuokoleane Initiative home">
-      <span className="brand-logo-crop" aria-hidden="true"><img src="/images/brand/tuokoleane-logo-blue.png" alt="" /></span>
+      <BrandLogo className="brand-logo" alt="" aria-hidden="true" />
     </a>
   );
 }
 
 const headerDestinations = [
-  { label: "Give", hash: "marketplace", image: "/images/listings/meal/02.jpg" },
-  { label: "About TI", hash: "values", image: "/images/ti-gallery/ti-gallery-51.jpg" },
-  { label: "Gallery", hash: "gallery", image: "/images/ti-gallery/ti-gallery-75.jpg" },
-  { label: "How it works", hash: "how-it-works", image: "/images/listings/mentor/02.jpg" },
+  { label: "Give", path: "/", hash: "marketplace", image: "/images/listings/meal/02.jpg" },
+  { label: "About TI", path: "/about", image: "/images/ti-gallery/ti-gallery-51.jpg" },
+  { label: "Gallery", path: "/gallery", image: "/images/ti-gallery/ti-gallery-75.jpg" },
+  { label: "How it works", path: "/", hash: "how-it-works", image: "/images/listings/mentor/02.jpg" },
 ];
 
-function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate }: HeaderProps) {
-  const homeLink = (event: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
+function Header({ basketCount, currentPath, expanded, menuOpen, onBasket, onMenu, onNavigate }: HeaderProps) {
+  const routeLink = (event: React.MouseEvent<HTMLAnchorElement>, path: string, hash?: string) => {
     event.preventDefault();
-    onNavigate("/", hash);
+    onNavigate(path, hash);
   };
 
   return (
@@ -420,19 +478,25 @@ function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate 
       <div className="header-main">
         <Brand onNavigate={onNavigate} />
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {headerDestinations.map((destination, index) => (
+          {headerDestinations.map((destination) => {
+            const active = destination.path === "/"
+              ? currentPath === "/" && destination.hash === "marketplace"
+              : currentPath === destination.path;
+            return (
             <a
-              className={index === 0 ? "nav-destination nav-destination-active" : "nav-destination"}
-              href={`/#${destination.hash}`}
+              className={active ? "nav-destination nav-destination-active" : "nav-destination"}
+              href={`${destination.path}${destination.hash ? `#${destination.hash}` : ""}`}
               key={destination.label}
-              onClick={(event) => homeLink(event, destination.hash)}
+              onClick={(event) => routeLink(event, destination.path, destination.hash)}
+              aria-current={active ? "page" : undefined}
             >
               <span className="nav-destination-image" aria-hidden="true">
                 <img src={destination.image} alt="" />
               </span>
               <span>{destination.label}</span>
             </a>
-          ))}
+            );
+          })}
         </nav>
         <div className="header-actions">
           <button className="basket-button" onClick={onBasket} aria-label={`Open kindness basket with ${basketCount} items`}>
@@ -447,19 +511,19 @@ function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate 
       </div>
       {expanded && (
         <nav className="discovery-bar" aria-label="Explore Tuokoleane">
-          <a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>
+          <a href="/#marketplace" onClick={(event) => routeLink(event, "/", "marketplace")}>
             <strong>What can I do?</strong>
             <span>Browse practical acts</span>
           </a>
-          <a href="/#how-it-works" onClick={(event) => homeLink(event, "how-it-works")}>
+          <a href="/#how-it-works" onClick={(event) => routeLink(event, "/", "how-it-works")}>
             <strong>How does it work?</strong>
-            <span>See the path from pledge to action</span>
+            <span>See the path from donation to action</span>
           </a>
-          <a href="/#programs" onClick={(event) => homeLink(event, "programs")}>
+          <a href="/#programs" onClick={(event) => routeLink(event, "/", "programs")}>
             <strong>Who makes it happen?</strong>
-            <span>Meet the TI programs</span>
+            <span>Meet TI programs and events</span>
           </a>
-          <a className="discovery-search" href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")} aria-label="Browse all ways to help">
+          <a className="discovery-search" href="/#marketplace" onClick={(event) => routeLink(event, "/", "marketplace")} aria-label="Browse all ways to help">
             <Search size={22} strokeWidth={2.4} />
           </a>
         </nav>
@@ -467,7 +531,7 @@ function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate 
       {menuOpen && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
           {headerDestinations.map((destination) => (
-            <a href={`/#${destination.hash}`} key={destination.label} onClick={(event) => homeLink(event, destination.hash)}>
+            <a href={`${destination.path}${destination.hash ? `#${destination.hash}` : ""}`} key={destination.label} onClick={(event) => routeLink(event, destination.path, destination.hash)}>
               <span className="nav-destination-image" aria-hidden="true"><img src={destination.image} alt="" /></span>
               <span>{destination.label}</span>
             </a>
@@ -483,10 +547,6 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
-  const [selectedIdea, setSelectedIdea] = useState<CampaignIdea | null>(null);
-  const [galleryExpanded, setGalleryExpanded] = useState(false);
-  const [activeGalleryCollection, setActiveGalleryCollection] = useState<GalleryCollection>("All Photos");
-  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -558,52 +618,6 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
     }
   };
 
-  useEffect(() => {
-    if (!selectedIdea && selectedGalleryIndex === null) return;
-    const previousOverflow = document.body.style.overflow;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelectedIdea(null);
-        setSelectedGalleryIndex(null);
-      }
-
-      if (selectedGalleryIndex === null) return;
-      if (event.key === "ArrowLeft") {
-        setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
-      }
-      if (event.key === "ArrowRight") {
-        setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
-      }
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [selectedIdea, selectedGalleryIndex]);
-
-  const browseFromIdea = () => {
-    setSelectedIdea(null);
-    window.requestAnimationFrame(() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" }));
-  };
-
-  const filteredGalleryPhotos = activeGalleryCollection === "All Photos"
-    ? galleryPhotos
-    : galleryPhotos.filter((photo) => photo.collection === activeGalleryCollection);
-  const visibleGalleryPhotos = galleryExpanded
-    ? filteredGalleryPhotos
-    : filteredGalleryPhotos.slice(0, collapsedGalleryPhotoCount);
-  const selectedGalleryPhoto = selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex];
-
-  const showPreviousGalleryPhoto = () => {
-    setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
-  };
-
-  const showNextGalleryPhoto = () => {
-    setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
-  };
-
   return (
     <main id="top">
       <section className="home-hero" aria-label="Tuokoleane Catalogue of Kindness">
@@ -615,55 +629,6 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
             Browse ways to help <ArrowRight size={18} />
           </button>
-        </div>
-      </section>
-
-      <section className="reach-section" aria-labelledby="reach-title">
-        <div className="page-width reach-heading">
-          <p className="eyebrow">A growing family</p>
-          <h2 id="reach-title">Touching lives across campuses and counties.</h2>
-        </div>
-        <div className="reach-marquee" role="region" aria-label="Places and communities reached">
-          <div className="reach-track">
-            {[0, 1].map((set) => (
-              <div className="reach-set" key={set} aria-hidden={set === 1}>
-                {placesReached.map((place) => (
-                  <span className="reach-mark" key={`${set}-${place.name}`}>
-                    <img className="reach-logo" src={place.logo} alt={`${place.name} official logo`} />
-                    <span>{place.name}</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="values-section" id="values">
-        <div className="page-width values-heading">
-          <h2><span>Dignity over display.</span><span>Clarity over vague promises.</span><span>Belonging over pity.</span></h2>
-        </div>
-        <div className="page-width values-infographic">
-          <article className="value-card value-card-primary">
-            <span className="value-number">01</span>
-            <div className="value-orbits" aria-hidden="true"><i /><i /><i /><Heart fill="currentColor" /></div>
-            <div><p>Our first value</p><h3>Dignity</h3><span>People are participants in their own lives, not material for a campaign.</span></div>
-          </article>
-          <article className="value-card">
-            <span className="value-number">02</span>
-            <div className="value-line" aria-hidden="true"><i /><i /><i /></div>
-            <div><p>Make the path visible</p><h3>Clarity</h3><span>Say what the pledge includes, who coordinates it and what still needs confirmation.</span></div>
-          </article>
-          <article className="value-card">
-            <span className="value-number">03</span>
-            <div className="value-people" aria-hidden="true"><i /><i /><i /></div>
-            <div><p>One big family</p><h3>Belonging</h3><span>Give with people, not at them. Care works best when everyone has agency.</span></div>
-          </article>
-        </div>
-        <div className="page-width model-stats" aria-label="Catalogue overview">
-          <div><strong>{kindnessPackages.length}</strong><span>practical ways to help</span></div>
-          <div><strong>3</strong><span>ways to give: money, time or goods</span></div>
-          <div><strong>{currency.format(500)}</strong><span>starting contribution</span></div>
         </div>
       </section>
 
@@ -739,9 +704,12 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           </div>
         </div>
         {filteredPackages.length ? (
-          <div className="package-grid">
-            {filteredPackages.map((item) => <PackageCard key={item.id} item={item} onNavigate={onNavigate} />)}
-          </div>
+          <>
+            <MobileCatalogue items={filteredPackages} onNavigate={onNavigate} />
+            <div className="package-grid">
+              {filteredPackages.map((item) => <PackageCard key={item.id} item={item} onNavigate={onNavigate} />)}
+            </div>
+          </>
         ) : (
           <div className="empty-results">
             <Search size={26} />
@@ -768,7 +736,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
 
       <section className="programs page-width" id="programs">
         <div className="section-heading compact-heading">
-          <p className="eyebrow">The work behind the listings</p>
+          <p className="eyebrow">Programs and events</p>
           <h2>One initiative. Several ways to belong.</h2>
         </div>
         <div className="program-grid">
@@ -776,6 +744,110 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
             <ProgramCard key={program.id} program={program} onNavigate={onNavigate} />
           ))}
         </div>
+        <MobilePrograms programs={programs} onNavigate={onNavigate} />
+      </section>
+      <ValuesSection />
+      <ReachSection />
+    </main>
+  );
+}
+
+function ValuesSection() {
+  return (
+    <section className="values-section" id="values">
+      <div className="page-width values-heading">
+        <h2><span>Dignity over display.</span><span>Clarity over vague promises.</span><span>Belonging over pity.</span></h2>
+      </div>
+      <div className="page-width values-infographic">
+        <article className="value-card value-card-primary">
+          <span className="value-number">01</span>
+          <div className="value-orbits" aria-hidden="true"><i /><i /><i /><Heart fill="currentColor" /></div>
+          <div><p>Our first value</p><h3>Dignity</h3><span>People are participants in their own lives, not material for a campaign.</span></div>
+        </article>
+        <article className="value-card">
+          <span className="value-number">02</span>
+          <div className="value-line" aria-hidden="true"><i /><i /><i /></div>
+          <div><p>Make the path visible</p><h3>Clarity</h3><span>Say what the contribution includes, who coordinates it and what still needs confirmation.</span></div>
+        </article>
+        <article className="value-card">
+          <span className="value-number">03</span>
+          <div className="value-people" aria-hidden="true"><i /><i /><i /></div>
+          <div><p>One big family</p><h3>Belonging</h3><span>Give with people, not at them. Care works best when everyone has agency.</span></div>
+        </article>
+      </div>
+      <div className="page-width model-stats" aria-label="Catalogue overview">
+        <div><strong>{kindnessPackages.length}</strong><span>practical ways to help</span></div>
+        <div><strong>3</strong><span>ways to give: money, time or goods</span></div>
+        <div><strong>{currency.format(500)}</strong><span>starting contribution</span></div>
+      </div>
+    </section>
+  );
+}
+
+function ReachSection() {
+  return (
+    <section className="reach-section" aria-labelledby="reach-title">
+      <div className="page-width reach-heading">
+        <p className="eyebrow">A growing family</p>
+        <h2 id="reach-title">Touching lives across campuses and counties.</h2>
+      </div>
+      <div className="reach-marquee" role="region" aria-label="Places and communities reached">
+        <div className="reach-track">
+          {[0, 1].map((set) => (
+            <div className="reach-set" key={set} aria-hidden={set === 1}>
+              {placesReached.map((place) => (
+                <span className="reach-mark" key={`${set}-${place.name}`}>
+                  <img className="reach-logo" src={place.logo} alt={`${place.name} official logo`} />
+                  <span>{place.name}</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AboutPage({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
+  const [selectedIdea, setSelectedIdea] = useState<CampaignIdea | null>(null);
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView());
+  }, []);
+
+  useEffect(() => {
+    if (!selectedIdea) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedIdea(null);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedIdea]);
+
+  const browseFromIdea = () => {
+    setSelectedIdea(null);
+    onNavigate("/", "marketplace");
+  };
+
+  return (
+    <main id="top">
+      <section className="program-hero page-width" aria-labelledby="about-ti-title">
+        <div className="program-hero-copy">
+          <p className="eyebrow">About Tuokoleane Initiative</p>
+          <h1 id="about-ti-title">We belong to one another.</h1>
+          <p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that every person deserves dignity, clarity and a place to belong.</p>
+        </div>
+        <figure className="program-hero-media">
+          <img src="/images/ti-gallery/ti-gallery-51.jpg" alt="Tuokoleane community members spending time together" />
+          <figcaption>Tuokoleane archive photography</figcaption>
+        </figure>
       </section>
 
       <section className="campaign-section" aria-labelledby="campaign-title">
@@ -807,16 +879,85 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
       <section className="manifesto-section">
         <div className="page-width manifesto-grid">
           <div><p className="eyebrow">The Tuokoleane way</p><h2>Do good without needing applause.</h2></div>
-          <div><p>Help without turning someone’s life into a performance. Make the promise clear. Let the person receiving care keep their privacy, choices and voice.</p><button className="primary-button manifesto-button" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>Choose one useful act <ArrowRight size={18} /></button></div>
+          <div><p>Help without turning someone’s life into a performance. Make the promise clear. Let the person receiving care keep their privacy, choices and voice.</p><button className="primary-button manifesto-button" onClick={() => onNavigate("/", "marketplace")}>Choose one useful act <ArrowRight size={18} /></button></div>
         </div>
       </section>
 
-      <section id="gallery" className="ti-gallery-section" aria-labelledby="ti-gallery-title">
+      <ValuesSection />
+      <ReachSection />
+
+      {selectedIdea && (
+        <div className="campaign-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedIdea(null)}>
+          <section className="campaign-dialog" role="dialog" aria-modal="true" aria-labelledby={`campaign-dialog-title-${selectedIdea.number}`} style={{ "--campaign-accent": selectedIdea.accent } as React.CSSProperties}>
+            <button className="campaign-dialog-close" onClick={() => setSelectedIdea(null)} aria-label="Close idea" autoFocus><X size={21} /></button>
+            <div className="campaign-dialog-media">
+              <img src={selectedIdea.image} alt={selectedIdea.imageAlt} />
+              <span>Concept artwork</span>
+            </div>
+            <div className="campaign-dialog-copy">
+              <p className="eyebrow">{selectedIdea.number} · {selectedIdea.kicker}</p>
+              <h2 id={`campaign-dialog-title-${selectedIdea.number}`}>{selectedIdea.title}</h2>
+              <p className="campaign-dialog-lede">{selectedIdea.teaser}</p>
+              <div className="campaign-dialog-description">{selectedIdea.description.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
+              <blockquote>{selectedIdea.takeaway}</blockquote>
+              <button className="primary-button" onClick={browseFromIdea}>Browse practical ways to help <ArrowRight size={18} /></button>
+              <p className="campaign-dialog-note">Explore the current listings to make a donation or offer your time. TI confirms payments and volunteer opportunities before fulfilment.</p>
+            </div>
+          </section>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function GalleryPage() {
+  const [galleryExpanded, setGalleryExpanded] = useState(false);
+  const [activeGalleryCollection, setActiveGalleryCollection] = useState<GalleryCollection>("All Photos");
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const filteredGalleryPhotos = activeGalleryCollection === "All Photos"
+    ? galleryPhotos
+    : galleryPhotos.filter((photo) => photo.collection === activeGalleryCollection);
+  const visibleGalleryPhotos = galleryExpanded
+    ? filteredGalleryPhotos
+    : filteredGalleryPhotos.slice(0, collapsedGalleryPhotoCount);
+  const selectedGalleryPhoto = selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex];
+
+  useEffect(() => {
+    if (selectedGalleryIndex === null) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedGalleryIndex(null);
+      if (event.key === "ArrowLeft") {
+        setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
+      }
+      if (event.key === "ArrowRight") {
+        setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [selectedGalleryIndex]);
+
+  const showPreviousGalleryPhoto = () => {
+    setSelectedGalleryIndex((current) => current === null ? null : (current - 1 + galleryPhotos.length) % galleryPhotos.length);
+  };
+
+  const showNextGalleryPhoto = () => {
+    setSelectedGalleryIndex((current) => current === null ? null : (current + 1) % galleryPhotos.length);
+  };
+
+  return (
+    <main id="top">
+      <section className="ti-gallery-section" aria-labelledby="ti-gallery-title">
         <div className="page-width">
           <div className="ti-gallery-heading">
             <div>
               <p className="eyebrow"><Images size={15} /> Real moments. One big family.</p>
-              <h2 id="ti-gallery-title">Tuokoleane Initiative Gallery</h2>
+              <h1 className="ti-gallery-title" id="ti-gallery-title">Tuokoleane Initiative Gallery</h1>
             </div>
             <p>Moments of welcome, shared time and community from the Tuokoleane Annual Sharing Day, TI Family Experience and other shared TI moments.</p>
           </div>
@@ -871,27 +1012,6 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         </div>
       </section>
 
-      {selectedIdea && (
-        <div className="campaign-dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedIdea(null)}>
-          <section className="campaign-dialog" role="dialog" aria-modal="true" aria-labelledby={`campaign-dialog-title-${selectedIdea.number}`} style={{ "--campaign-accent": selectedIdea.accent } as React.CSSProperties}>
-            <button className="campaign-dialog-close" onClick={() => setSelectedIdea(null)} aria-label="Close idea" autoFocus><X size={21} /></button>
-            <div className="campaign-dialog-media">
-              <img src={selectedIdea.image} alt={selectedIdea.imageAlt} />
-              <span>Concept artwork</span>
-            </div>
-            <div className="campaign-dialog-copy">
-              <p className="eyebrow">{selectedIdea.number} · {selectedIdea.kicker}</p>
-              <h2 id={`campaign-dialog-title-${selectedIdea.number}`}>{selectedIdea.title}</h2>
-              <p className="campaign-dialog-lede">{selectedIdea.teaser}</p>
-              <div className="campaign-dialog-description">{selectedIdea.description.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
-              <blockquote>{selectedIdea.takeaway}</blockquote>
-              <button className="primary-button" onClick={browseFromIdea}>Browse practical ways to help <ArrowRight size={18} /></button>
-              <p className="campaign-dialog-note">This catalogue is a prototype. No payment, placement or fulfilled act is created.</p>
-            </div>
-          </section>
-        </div>
-      )}
-
       {selectedGalleryPhoto && selectedGalleryIndex !== null && (
         <div className="ti-gallery-lightbox" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedGalleryIndex(null)}>
           <section className="ti-gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="ti-gallery-dialog-title">
@@ -938,15 +1058,17 @@ function ProgramCard({ program, onNavigate }: { program: Program; onNavigate: (p
   };
 
   return (
-    <article className="program-card" style={{ "--program-accent": program.accent } as React.CSSProperties}>
+    <article className={`program-card${program.featured ? " program-card-featured" : ""}`} style={{ "--program-accent": program.accent } as React.CSSProperties}>
       <a className="program-card-photo" href={path} onClick={open} aria-label={`Explore ${program.name}`}>
-        <img src={program.image} alt={program.imageAlt} />
+        <img src={program.image} alt={program.imageAlt} loading="lazy" decoding="async" />
         <span>{program.imageSource === "archive" ? "Tuokoleane archive" : "Programme concept"}</span>
+        {program.featured && <b className="program-featured-badge">Featured annual event</b>}
       </a>
       <div className="program-card-body">
         <div className="program-card-number">{program.number}</div>
         <p>{program.kicker}</p>
         <h3><a href={path} onClick={open}>{program.name}</a></h3>
+        {program.eventDate && <time className="program-event-date" dateTime={program.eventDateIso}><CalendarDays size={14} /> {program.eventDateShort ?? program.eventDate}</time>}
         <p className="program-card-summary">{program.summary}</p>
         <div className="program-tags" aria-label={`${program.name} activities`}>
           {program.activities.slice(0, 2).map((activity) => <span key={activity}>{activity}</span>)}
@@ -971,6 +1093,7 @@ function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (p
           <div className="program-hero-copy">
             <p className="eyebrow">{program.number} · {program.kicker}</p>
             <h1>{program.name}</h1>
+            {program.eventDate && <time className="program-page-date" dateTime={program.eventDateIso}><CalendarDays size={17} /> {program.eventDate}</time>}
             <p>{program.summary}</p>
           </div>
           <figure className="program-hero-media">
@@ -990,18 +1113,38 @@ function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (p
           <article><span>03</span><h2>How progress can be understood</h2><ul>{program.measurements.map((entry) => <li key={entry}>{entry}</li>)}</ul></article>
         </section>
 
-        <section className="program-related">
-          <div className="section-heading">
-            <p className="eyebrow">Take part in this work</p>
-            <h2>Practical ways in.</h2>
-            <p>These listings turn the programme idea into a clear contribution or expression of interest.</p>
-          </div>
-          <div className="related-grid">{relatedPackages.map((item) => <PackageCard key={item.id} item={item} onNavigate={onNavigate} />)}</div>
-        </section>
+        {program.galleryImages && program.galleryImages.length > 0 && (
+          <section className="program-gallery" aria-labelledby="program-gallery-title">
+            <div className="section-heading">
+              <p className="eyebrow">From the TI archive</p>
+              <h2 id="program-gallery-title">Moments from {program.name}.</h2>
+            </div>
+            <div className="program-gallery-grid">
+              {program.galleryImages.map((image) => <img src={image.src} alt={image.alt} loading="lazy" decoding="async" key={image.src} />)}
+            </div>
+            {program.participationHref && program.participationLabel && (
+              <div className="program-participation">
+                <a className="primary-button" href={program.participationHref}>{program.participationLabel} <ArrowRight size={18} /></a>
+                {program.participationNote && <p>{program.participationNote}</p>}
+              </div>
+            )}
+          </section>
+        )}
+
+        {relatedPackages.length > 0 && (
+          <section className="program-related">
+            <div className="section-heading">
+              <p className="eyebrow">Take part in this work</p>
+              <h2>Practical ways in.</h2>
+              <p>These listings turn the programme idea into a clear contribution or expression of interest.</p>
+            </div>
+            <div className="related-grid">{relatedPackages.map((item) => <PackageCard key={item.id} item={item} onNavigate={onNavigate} />)}</div>
+          </section>
+        )}
 
         <section className="program-scope">
           <ShieldCheck size={22} />
-          <div><strong>Clear about the boundary</strong><p>The programme descriptions reflect Tuokoleane’s supplied concept document. Intended outcomes are goals, not claims of measured impact. Payment and volunteer placement remain disabled in this prototype.</p></div>
+          <div><strong>Clear about the boundary</strong><p>The programme descriptions reflect Tuokoleane’s supplied concept document. Intended outcomes are goals, not claims of measured impact. TI confirms donations and volunteer placements before fulfilment.</p></div>
         </section>
       </div>
     </main>
@@ -1018,14 +1161,15 @@ function PackageCard({ item, onNavigate }: { item: KindnessPackage; onNavigate: 
   return (
     <article className={`package-card${item.featured ? " package-card-featured" : ""}`}>
       <a className="package-photo-link" href={path} onClick={open} aria-label={`View ${item.title}`}>
-        <img src={item.images[0].src} alt={item.images[0].alt} />
-        <span className={`package-badge${item.featured ? " package-badge-featured" : ""}`}>{item.label}</span>
+        <img src={item.images[0].src} alt={item.images[0].alt} loading="lazy" decoding="async" />
+        {item.specialBadge && <span className="package-badge">{item.specialBadge}</span>}
         {item.eventDate && (
           <time className="package-event-date" dateTime={item.eventDateIso}>
             <CalendarDays size={13} /> {item.eventDateShort ?? item.eventDate}
           </time>
         )}
       </a>
+      <FavoriteButton className="desktop-listing-favourite" itemId={item.id} itemTitle={item.title} />
       <div className="package-body">
         <div className="package-title-row">
           <a href={path} onClick={open}><h3>{item.title}</h3></a>
@@ -1041,16 +1185,24 @@ function PackageCard({ item, onNavigate }: { item: KindnessPackage; onNavigate: 
   );
 }
 
+function PaymentBadges({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`payment-badges${compact ? " payment-badges-compact" : ""}`} aria-label="Supported mobile money methods">
+      <img className="payment-badge-wide" src="/images/payment-badges/mpesa.svg" alt="M-PESA" />
+      <img src="/images/payment-badges/tkash.jpg" alt="T-Kash" />
+      <img src="/images/payment-badges/airtel-money.png" alt="Airtel Money" />
+    </div>
+  );
+}
+
 function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd: (item: KindnessPackage, amount?: number) => void; onNavigate: (path: string, hash?: string) => void }) {
   const [customAmount, setCustomAmount] = useState("1000");
   const [galleryOpen, setGalleryOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share");
 
   useEffect(() => {
     setCustomAmount("1000");
     setGalleryOpen(false);
-    setSaved(false);
   }, [item.id]);
 
   useEffect(() => {
@@ -1083,7 +1235,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           <button className="back-link" onClick={() => onNavigate("/", "marketplace")}><ArrowLeft size={18} /> All ways to help</button>
           <div className="listing-actions">
             <button onClick={share}><Share2 size={17} /> {shareLabel}</button>
-            <button onClick={() => setSaved((value) => !value)} aria-pressed={saved}><Heart size={17} fill={saved ? "currentColor" : "none"} /> {saved ? "Saved" : "Save"}</button>
+            <FavoriteButton className="listing-page-favourite" itemId={item.id} itemTitle={item.title} showText />
           </div>
         </div>
         <div className="listing-heading">
@@ -1111,9 +1263,9 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           <button className="show-photos" onClick={() => setGalleryOpen(true)}><Images size={17} /> Show all photos</button>
         </div>
         <p className="photo-disclosure">
-          {isEvent
+          {item.imageDisclosure ?? (isEvent
             ? "These representative Gala composites feature people from Tuokoleane’s real photo archive. They do not document a completed Gala."
-            : "Representative imagery created for this prototype. These are not photographs of named beneficiaries or completed Tuokoleane activities."}
+            : "Representative imagery. These are not photographs of named beneficiaries or proof of completed Tuokoleane activities.")}
         </p>
 
         <div className="listing-content-grid">
@@ -1123,7 +1275,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
                 <h2>{isEvent ? `Annual Gala · ${item.category}` : `${item.label} · ${item.category}`}</h2>
                 <p>Coordinated in Kenya by Tuokoleane Initiative</p>
               </div>
-              <span className="coordinator-mark" aria-label="Tuokoleane coordinated"><img src="/images/brand/tuokoleane-logo-blue.png" alt="" /></span>
+              <span className="coordinator-mark" aria-label="Tuokoleane coordinated"><BrandLogo variant="symbol" className="brand-symbol" alt="" aria-hidden="true" /></span>
             </section>
 
             <section className="listing-highlights" aria-label="Listing highlights">
@@ -1138,7 +1290,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
             </section>
 
             <section className="listing-section">
-              <h2>{isEvent ? "What your ticket includes" : "What your pledge includes"}</h2>
+              <h2>{isEvent ? "What your ticket includes" : item.kind === "time" ? "What your offer includes" : "What your donation includes"}</h2>
               <ul className="feature-list">
                 {item.includes.map((entry) => <li key={entry}><Check size={18} /> {entry}</li>)}
               </ul>
@@ -1154,23 +1306,29 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
               <ol>
                 {isEvent ? (
                   <>
-                    <li><span>1</span><div><strong>You reserve a seat</strong><p>Add one or more tickets to your basket and review the reservation details.</p></div></li>
-                    <li><span>2</span><div><strong>TI confirms the evening</strong><p>The team shares the venue, programme and final attendance details when they are ready.</p></div></li>
-                    <li><span>3</span><div><strong>You choose how to take part</strong><p>Join the dinner and decide for yourself whether to make a voluntary auction pledge.</p></div></li>
+                    <li><span>1</span><div><strong>You add your seat</strong><p>Add one or more tickets to your basket and pay the total to the TI M-PESA Till.</p></div></li>
+                    <li><span>2</span><div><strong>You send the payment details</strong><p>Enter your M-PESA confirmation code so the TI team can match your ticket payment.</p></div></li>
+                    <li><span>3</span><div><strong>TI confirms your place</strong><p>The team checks the payment and shares the venue, programme and final attendance details.</p></div></li>
+                  </>
+                ) : item.kind === "time" ? (
+                  <>
+                    <li><span>1</span><div><strong>You share your interest</strong><p>Add the activity to your basket and tell the TI team how to reach you.</p></div></li>
+                    <li><span>2</span><div><strong>TI checks the opportunity</strong><p>The team confirms the current need, timing, fit and safeguarding requirements.</p></div></li>
+                    <li><span>3</span><div><strong>You coordinate together</strong><p>TI contacts you before any visit, session or volunteer activity is arranged.</p></div></li>
                   </>
                 ) : (
                   <>
-                    <li><span>1</span><div><strong>You create a pledge</strong><p>This prototype records the intent in your browser only.</p></div></li>
-                    <li><span>2</span><div><strong>TI confirms the opportunity</strong><p>In production, the team would check the need, timing and practical conditions.</p></div></li>
-                    <li><span>3</span><div><strong>You receive an update</strong><p>When evidence is available, TI can report what was allocated and what happened.</p></div></li>
+                    <li><span>1</span><div><strong>You choose your contribution</strong><p>Add the cause to your basket and pay the total to the TI M-PESA Till.</p></div></li>
+                    <li><span>2</span><div><strong>You send the payment details</strong><p>Enter your M-PESA confirmation code so the TI team can match your donation.</p></div></li>
+                    <li><span>3</span><div><strong>TI confirms and coordinates</strong><p>The team checks the payment, confirms the current need and follows up by email.</p></div></li>
                   </>
                 )}
               </ol>
             </section>
           </div>
 
-          <aside className="pledge-card" aria-label={item.actionLabel ?? "Create a pledge"}>
-            <div className="pledge-price"><strong>{item.kind === "custom" ? "Choose your amount" : packagePrice(item)}</strong><span>{item.kind === "time" ? item.duration : item.priceUnit ?? "per pledge"}</span></div>
+          <aside className="pledge-card" aria-label={item.actionLabel ?? (item.kind === "time" ? "Share your interest" : "Make a donation")}>
+            <div className="pledge-price"><strong>{item.kind === "custom" ? "Choose your amount" : packagePrice(item)}</strong><span>{item.kind === "time" ? item.duration : item.priceUnit ?? "per contribution"}</span></div>
             {item.kind === "custom" && (
               <label className="amount-field">
                 <span>Your contribution</span>
@@ -1190,10 +1348,22 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
                 </>
               )}
             </div>
+            <section className="listing-payment-details" aria-label="Payment details">
+              <div className="listing-payment-heading"><strong>{item.kind === "time" ? "Optional money donation" : "Payment details"}</strong><PaymentBadges compact /></div>
+              <dl>
+                <div><dt>M-PESA Till</dt><dd>{TI_PAYMENT_DETAILS.tillNumber}</dd></div>
+                <div><dt>Account name</dt><dd>{TI_PAYMENT_DETAILS.accountName}</dd></div>
+              </dl>
+              <p>
+                {item.kind === "time"
+                  ? "This activity does not require payment. If you also donate, use these details and keep your confirmation message."
+                  : <>After paying, forward the M-PESA confirmation message to <a href={`sms:${TI_PAYMENT_DETAILS.confirmationPhoneLink}`}>{TI_PAYMENT_DETAILS.confirmationPhoneDisplay}</a>. You will add the confirmation code at checkout.</>}
+              </p>
+            </section>
             <button className="primary-button full" disabled={item.kind === "custom" && amount < minimumAmount} onClick={() => onAdd(item, amount)}>
               {item.actionLabel ?? (item.kind === "time" ? "Add to my plan" : "Add to basket")}
             </button>
-            {item.kind === "custom" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)} for this demo.</p>}
+            {item.kind === "custom" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)}.</p>}
           </aside>
         </div>
 
@@ -1225,7 +1395,7 @@ function BasketDrawer({ basket, total, onClose, onExplore, onQuantity, onCheckou
           <><div className="basket-items">{basket.map((entry, index) => {
             const item = packageById.get(entry.packageId)!;
             return <article className="basket-item" key={`${entry.packageId}-${entry.amount}`}><img src={item.images[0].src} alt="" /><div className="basket-item-copy"><strong>{item.title}</strong><small>{entry.amount ? currency.format(entry.amount) : item.duration}</small></div><div className="quantity-control"><button onClick={() => onQuantity(index, -1)} aria-label={`Remove one ${item.title}`}><Minus size={14} /></button><span>{entry.quantity}</span><button onClick={() => onQuantity(index, 1)} aria-label={`Add one ${item.title}`}><Plus size={14} /></button></div></article>;
-          })}</div><div className="basket-summary"><div><span>Money contributions</span><strong>{currency.format(total)}</strong></div><div><span>Acts in this plan</span><strong>{count}</strong></div><p><ShieldCheck size={16} /> Demo only. Nothing will be charged.</p><button className="primary-button full" onClick={onCheckout}>Review pledge <ArrowRight size={18} /></button></div></>
+          })}</div><div className="basket-summary"><div><span>Money contributions</span><strong>{currency.format(total)}</strong></div><div><span>Acts in this basket</span><strong>{count}</strong></div><p><ShieldCheck size={16} /> {total > 0 ? "Pay by M-PESA, then send the details to TI." : "TI will review your interest before arranging an activity."}</p><button className="primary-button full" onClick={onCheckout}>{total > 0 ? "Continue to payment details" : "Share my interest"} <ArrowRight size={18} /></button></div></>
         )}
       </aside>
     </div>
@@ -1237,22 +1407,64 @@ interface CheckoutProps {
   total: number;
   onBack: () => void;
   onClose: () => void;
-  onSubmit: (email: string) => void;
+  onSubmit: (submission: DonationSubmission) => Promise<void>;
 }
 
 function Checkout({ basket, total, onBack, onClose, onSubmit }: CheckoutProps) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [note, setNote] = useState("");
+  const [mpesaReference, setMpesaReference] = useState("");
+  const [website, setWebsite] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const actCount = basket.reduce((count, item) => count + item.quantity, 0);
+  const hasMoneyContribution = total > 0;
+  const emailInvalid = !isValidEmail(email);
+  const nameInvalid = !anonymous && !name.trim();
+  const phoneInvalid = hasMoneyContribution && !isValidPhone(phone);
+  const mpesaReferenceInvalid = hasMoneyContribution && !isValidMpesaReference(mpesaReference);
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitted(true);
-    if (!email.trim() || (!anonymous && !name.trim())) return;
-    onSubmit(email.trim());
+    setSubmitError("");
+    if (emailInvalid || nameInvalid || phoneInvalid || mpesaReferenceInvalid || sending) return;
+
+    const items = basket.map((entry) => {
+      const item = packageById.get(entry.packageId)!;
+      return {
+        packageId: item.id,
+        title: item.title,
+        kind: item.kind,
+        quantity: entry.quantity,
+        unitAmount: entry.amount,
+      };
+    });
+
+    setSending(true);
+    try {
+      await onSubmit({
+        reference: createSubmissionReference(),
+        donor: {
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          anonymous,
+        },
+        note: note.trim(),
+        mpesaReference: mpesaReference.trim().toUpperCase(),
+        items,
+        website,
+      });
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "We could not send your details. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -1260,25 +1472,47 @@ function Checkout({ basket, total, onBack, onClose, onSubmit }: CheckoutProps) {
       <header className="checkout-header"><button className="checkout-back" onClick={onBack}><ArrowLeft size={18} /> Back to basket</button><span className="checkout-wordmark">Tuokoleane Initiative</span><button className="icon-button" onClick={onClose} aria-label="Close checkout"><X /></button></header>
       <div className="checkout-grid">
         <form className="checkout-form" onSubmit={submit} noValidate>
-          <p className="eyebrow">Review your pledge</p><h1 id="checkout-title">Who is this kindness from?</h1><p className="checkout-lede">We only need enough information to show the flow. This preview saves nothing beyond your browser.</p>
-          <div className="form-row two-columns"><label><span>Name {!anonymous && "*"}</span><input value={name} onChange={(event) => setName(event.target.value)} disabled={anonymous} aria-invalid={submitted && !anonymous && !name.trim()} placeholder="Your name" /></label><label><span>Email *</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={submitted && !email.trim()} placeholder="you@example.com" /></label></div>
-          {submitted && (!email.trim() || (!anonymous && !name.trim())) && <p className="form-error">Add your email and either your name or choose to give anonymously.</p>}
-          <label className="check-row"><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} /><span><strong>Give anonymously</strong><small>Your name would not appear in public donor recognition.</small></span></label>
-          <label className="form-row"><span>A note for the team <small>Optional</small></span><textarea value={note} onChange={(event) => setNote(event.target.value)} rows={4} placeholder="Anything Tuokoleane should know about this pledge?" /></label>
-          <div className="demo-payment"><ShieldCheck size={21} /><span><strong>Payment is intentionally off</strong><small>M-Pesa and card checkout will be connected only after the receiving account, safeguarding rules and refund process are confirmed.</small></span></div>
-          <button className="primary-button checkout-submit" type="submit">Create demo pledge <ArrowRight size={18} /></button><p className="form-fineprint">No donation, receipt or volunteer placement is created.</p>
+          <p className="eyebrow">{hasMoneyContribution ? "Complete your donation" : "Share your interest"}</p><h1 id="checkout-title">{hasMoneyContribution ? "Send your donation details to TI." : "Tell TI how to reach you."}</h1><p className="checkout-lede">{hasMoneyContribution ? "Pay the basket total using the M-PESA details below. Then add your confirmation code so the team can match your donation." : "The TI team will use these details to confirm the opportunity, availability and next steps."}</p>
+
+          {hasMoneyContribution && (
+            <section className="checkout-payment-card" aria-labelledby="mpesa-payment-title">
+              <div className="checkout-payment-head"><div><p className="eyebrow">Mobile money</p><h2 id="mpesa-payment-title">Pay with M-PESA</h2></div><PaymentBadges /></div>
+              <dl>
+                <div><dt>Amount</dt><dd>{currency.format(total)}</dd></div>
+                <div><dt>Till Number</dt><dd>{TI_PAYMENT_DETAILS.tillNumber}</dd></div>
+                <div><dt>Account name</dt><dd>{TI_PAYMENT_DETAILS.accountName}</dd></div>
+              </dl>
+              <ol>
+                <li>Open M-PESA and select Lipa na M-PESA, then Buy Goods and Services.</li>
+                <li>Enter Till Number {TI_PAYMENT_DETAILS.tillNumber} and pay {currency.format(total)}.</li>
+                <li>Forward the M-PESA confirmation message to <a href={`sms:${TI_PAYMENT_DETAILS.confirmationPhoneLink}`}>{TI_PAYMENT_DETAILS.confirmationPhoneDisplay}</a>.</li>
+              </ol>
+            </section>
+          )}
+
+          <div className="form-row two-columns"><label><span>Name {!anonymous && "*"}</span><input value={name} onChange={(event) => setName(event.target.value)} disabled={anonymous || sending} aria-invalid={submitted && nameInvalid} maxLength={120} placeholder="Your name" /></label><label><span>Email *</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={sending} aria-invalid={submitted && emailInvalid} maxLength={254} autoComplete="email" placeholder="you@example.com" /></label></div>
+          <div className="form-row two-columns">
+            <label><span>{hasMoneyContribution ? "Phone used for M-PESA *" : "Phone"}</span><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} disabled={sending} aria-invalid={submitted && phoneInvalid} maxLength={30} autoComplete="tel" placeholder="07XX XXX XXX" /></label>
+            {hasMoneyContribution && <label><span>M-PESA confirmation code *</span><input value={mpesaReference} onChange={(event) => setMpesaReference(event.target.value.toUpperCase().replace(/\s/g, ""))} disabled={sending} aria-invalid={submitted && mpesaReferenceInvalid} maxLength={20} autoComplete="off" placeholder="For example, TAA1B2C3D4" /></label>}
+          </div>
+          {submitted && (emailInvalid || nameInvalid || phoneInvalid || mpesaReferenceInvalid) && <p className="form-error">{hasMoneyContribution ? "Add a valid email, M-PESA phone number and confirmation code. Add your name or choose to give anonymously." : "Add a valid email and either your name or choose to participate anonymously."}</p>}
+          <label className="check-row"><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} disabled={sending} /><span><strong>{hasMoneyContribution ? "Give anonymously" : "Participate anonymously"}</strong><small>TI still receives your contact details so the team can confirm this submission. Your name will not be used in public recognition.</small></span></label>
+          <label className="form-row"><span>A note for the team <small>Optional</small></span><textarea value={note} onChange={(event) => setNote(event.target.value)} disabled={sending} maxLength={2000} rows={4} placeholder={hasMoneyContribution ? "Anything Tuokoleane should know about this donation?" : "Tell Tuokoleane about your availability or anything the team should know."} /></label>
+          <label className="honeypot" aria-hidden="true"><span>Website</span><input tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} /></label>
+          {submitError && <p className="submission-error" role="alert">{submitError}</p>}
+          <button className="primary-button checkout-submit" type="submit" disabled={sending}>{sending ? "Sending to TI..." : hasMoneyContribution ? "Send donation details" : "Send my interest"} {!sending && <ArrowRight size={18} />}</button><p className="form-fineprint">{hasMoneyContribution ? "TI will verify the M-PESA code against its payment records before confirming your donation." : "Submitting your interest does not confirm a volunteer placement."}</p>
         </form>
         <aside className="order-card"><div className="order-card-head"><p className="eyebrow">Your kindness plan</p><span>{actCount} {actCount === 1 ? "act" : "acts"}</span></div><div className="order-lines">{basket.map((entry) => {
           const item = packageById.get(entry.packageId)!;
           return <div className="order-line" key={`${entry.packageId}-${entry.amount}`}><img src={item.images[0].src} alt="" /><div><strong>{item.title}{entry.quantity > 1 ? ` × ${entry.quantity}` : ""}</strong><small>{item.program}</small></div><b>{entry.amount ? currency.format(entry.amount * entry.quantity) : "Time"}</b></div>;
-        })}</div><div className="order-total"><span>Total contribution</span><strong>{currency.format(total)}</strong></div><p className="order-note"><CircleCheck size={17} /> You will see a confirmation before leaving this demo.</p></aside>
+        })}</div><div className="order-total"><span>Total contribution</span><strong>{currency.format(total)}</strong></div><p className="order-note"><CircleCheck size={17} /> {hasMoneyContribution ? `The TI team receives these details at ${TI_PAYMENT_DETAILS.notificationEmail}.` : "TI will email or call you after reviewing the opportunity."}</p></aside>
       </div>
     </div>
   );
 }
 
 function NotFound({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
-  return <main className="not-found page-width"><p className="eyebrow">Page not found</p><h1>This part of the catalogue is not available.</h1><p>The link may have changed, or the page may no longer be in this preview.</p><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Browse the catalogue</button></main>;
+  return <main className="not-found page-width"><p className="eyebrow">Page not found</p><h1>This part of the catalogue is not available.</h1><p>The link may have changed, or the page may no longer be available.</p><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Browse the catalogue</button></main>;
 }
 
 type SocialPlatform = "instagram" | "facebook";
@@ -1303,12 +1537,13 @@ function SocialIcon({ platform }: { platform: SocialPlatform }) {
 
 function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => void }) {
   const homeLink = (event: React.MouseEvent<HTMLAnchorElement>, hash: string) => { event.preventDefault(); onNavigate("/", hash); };
+  const routeLink = (event: React.MouseEvent<HTMLAnchorElement>, path: string, hash?: string) => { event.preventDefault(); onNavigate(path, hash); };
   return (
     <footer className="site-footer">
       <div className="page-width footer-cta"><div><p className="eyebrow">Start somewhere useful</p><h2>One act is enough to begin.</h2></div><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Explore the catalogue <ArrowRight size={18} /></button></div>
       <div className="page-width footer-grid">
-        <div className="footer-brand"><img className="footer-symbol" src="/icons/android-chrome-192x192.png" alt="Tuokoleane Initiative symbol" /><p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that everyone should be treated with dignity.</p><span>Kenya · Give · Share · Care</span></div>
-        <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a><a href="/#values" onClick={(event) => homeLink(event, "values")}>Our values</a></div>
+        <div className="footer-brand"><BrandLogo variant="symbol" className="footer-symbol" alt="Tuokoleane Initiative symbol" /><p>Tuokoleane Initiative brings people together around practical care, shared responsibility and the belief that everyone should be treated with dignity.</p><span>Kenya · Give · Share · Care</span></div>
+        <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a><a href="/about#values" onClick={(event) => routeLink(event, "/about", "values")}>Our values</a><a href="/gallery" onClick={(event) => routeLink(event, "/gallery")}>Gallery</a></div>
         <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/wellness-day" onClick={(event) => { event.preventDefault(); onNavigate("/listing/wellness-day"); }}>Back a wellness day</a></div>
         <div><strong>Learn</strong><a href="/program/sharesphere" onClick={(event) => { event.preventDefault(); onNavigate("/program/sharesphere"); }}>ShareSphere</a><a href="/program/family-units" onClick={(event) => { event.preventDefault(); onNavigate("/program/family-units"); }}>Family Units</a><a href="https://tuokoleane.org">Main website</a></div>
         <div className="footer-contact">

@@ -45,8 +45,8 @@ describe("Tuokoleane kindness marketplace", () => {
     const discoveryNavigation = screen.getByRole("navigation", { name: "Explore Tuokoleane" });
 
     expect(within(primaryNavigation).getByRole("link", { name: "Give" })).toHaveAttribute("href", "/#marketplace");
-    expect(within(primaryNavigation).getByRole("link", { name: "About TI" })).toHaveAttribute("href", "/#values");
-    expect(within(primaryNavigation).getByRole("link", { name: "Gallery" })).toHaveAttribute("href", "/#gallery");
+    expect(within(primaryNavigation).getByRole("link", { name: "About TI" })).toHaveAttribute("href", "/about");
+    expect(within(primaryNavigation).getByRole("link", { name: "Gallery" })).toHaveAttribute("href", "/gallery");
     expect(within(primaryNavigation).getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/#how-it-works");
     expect(within(primaryNavigation).getAllByRole("link")).toHaveLength(4);
     expect(container.querySelectorAll(".nav-destination-image img")).toHaveLength(4);
@@ -74,9 +74,10 @@ describe("Tuokoleane kindness marketplace", () => {
     await user.type(search, "school");
 
     const results = screen.getByRole("listbox", { name: "Listing search results" });
-    expect(within(results).getAllByRole("option")).toHaveLength(2);
+    expect(within(results).getAllByRole("option").length).toBeGreaterThan(2);
     expect(within(results).getByRole("option", { name: /Sponsor school supplies/ })).toBeInTheDocument();
     expect(within(results).getByRole("option", { name: /Support school fees/ })).toBeInTheDocument();
+    expect(within(results).getByRole("option", { name: /Buy a pair of school shoes/ })).toBeInTheDocument();
 
     await user.click(within(results).getByRole("option", { name: /Support school fees/ }));
 
@@ -97,14 +98,15 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "Plant a tree", level: 1 })).toBeInTheDocument();
   });
 
-  it("features The TI Annual Gala first with its date and ticket price", () => {
+  it("keeps The TI Annual Gala out of the donation catalogue", async () => {
+    const user = userEvent.setup();
     const { container } = render(<App />);
-    const cards = [...container.querySelectorAll<HTMLElement>(".package-card")];
+    const marketplace = container.querySelector<HTMLElement>("#marketplace")!;
 
-    expect(within(cards[0]).getByRole("heading", { name: "The TI Annual Gala" })).toBeInTheDocument();
-    expect(within(cards[0]).getByText("Featured")).toBeInTheDocument();
-    expect(within(cards[0]).getByText("1 Dec 2027")).toBeInTheDocument();
-    expect(within(cards[0]).getByText("Ksh 3,000")).toBeInTheDocument();
+    expect(within(marketplace).queryByRole("heading", { name: "The TI Annual Gala" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("combobox", { name: "Search kindness packages" }), "TI Annual Gala");
+    expect(screen.getByText("No listings match “TI Annual Gala”.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Explore The TI Annual Gala" })).toHaveAttribute("href", "/program/ti-annual-gala");
   });
 
   it("renders official institution and county logos in the reach strip", () => {
@@ -114,6 +116,27 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(logos).toHaveLength(18);
     expect(logos.every((logo) => logo.src.includes("/images/reach/"))).toBe(true);
     expect(logos.filter((logo) => logo.alt === "University of Nairobi official logo")).toHaveLength(2);
+  });
+
+  it("puts the catalogue first and closes the homepage with values and reach", () => {
+    const { container } = render(<App />);
+    const marketplace = container.querySelector("#marketplace");
+    const howItWorks = container.querySelector("#how-it-works");
+    const programsSection = container.querySelector("#programs");
+    const valuesSection = container.querySelector("#values");
+    const reachSection = container.querySelector(".reach-section");
+
+    expect(marketplace).toBeInTheDocument();
+    expect(howItWorks).toBeInTheDocument();
+    expect(programsSection).toBeInTheDocument();
+    expect(valuesSection).toBeInTheDocument();
+    expect(reachSection).toBeInTheDocument();
+    expect(marketplace!.compareDocumentPosition(howItWorks!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(howItWorks!.compareDocumentPosition(programsSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(programsSection!.compareDocumentPosition(valuesSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(valuesSection!.compareDocumentPosition(reachSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Kindness becomes real when it becomes specific." })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Tuokoleane Initiative Gallery" })).not.toBeInTheDocument();
   });
 
   it("shows the organisation's direct contact details", () => {
@@ -126,7 +149,8 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("link", { name: /TikTok/i })).not.toBeInTheDocument();
     expect(container.querySelector(".footer-social-links")?.textContent).toBe("");
     expect(screen.queryByText("@Tuokoleane_Initiative")).not.toBeInTheDocument();
-    expect(container.querySelector(".footer-symbol")).toHaveAttribute("src", "/icons/android-chrome-192x192.png");
+    expect(container.querySelector(".footer-symbol img")).toHaveAttribute("src", "/images/brand/tuokoleane-symbol-blue.png");
+    expect(container.querySelector('.footer-symbol source[media="(prefers-color-scheme: dark)"]')).toHaveAttribute("srcset", "/images/brand/tuokoleane-symbol-dark.png");
   });
 
   it("shows supported donation methods with the HD M-PESA mark", () => {
@@ -141,6 +165,7 @@ describe("Tuokoleane kindness marketplace", () => {
   });
 
   it("shows five campaign cards and opens a detailed idea", async () => {
+    window.history.replaceState({}, "", "/about");
     const user = userEvent.setup();
     const { container } = render(<App />);
     const cards = [...container.querySelectorAll<HTMLButtonElement>(".campaign-card")];
@@ -161,6 +186,7 @@ describe("Tuokoleane kindness marketplace", () => {
   });
 
   it("shows the TI archive gallery and opens the full photo viewer", async () => {
+    window.history.replaceState({}, "", "/gallery");
     const user = userEvent.setup();
     const { container } = render(<App />);
 
@@ -183,6 +209,33 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(5);
     await user.click(screen.getByRole("button", { name: "View all 25 photos" }));
     expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(25);
+  });
+
+  it("opens About TI on its own route with the campaign, values and reach sections", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const primaryNavigation = screen.getByRole("navigation", { name: "Primary navigation" });
+
+    await user.click(within(primaryNavigation).getByRole("link", { name: "About TI" }));
+
+    expect(window.location.pathname).toBe("/about");
+    expect(screen.getByRole("heading", { name: "We belong to one another.", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Kindness becomes real when it becomes specific." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Dignity" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Touching lives across campuses and counties." })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What do you have to give?" })).not.toBeInTheDocument();
+  });
+
+  it("opens Gallery on its own route without the homepage catalogue", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const primaryNavigation = screen.getByRole("navigation", { name: "Primary navigation" });
+
+    await user.click(within(primaryNavigation).getByRole("link", { name: "Gallery" }));
+
+    expect(window.location.pathname).toBe("/gallery");
+    expect(screen.getByRole("heading", { name: "Tuokoleane Initiative Gallery", level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What do you have to give?" })).not.toBeInTheDocument();
   });
 
   it("opens each package on its own route", async () => {
@@ -209,6 +262,26 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "What happens here" })).toBeInTheDocument();
   });
 
+  it("opens Annual Sharing Day with archive photos and a manual attendance enquiry", () => {
+    window.history.replaceState({}, "", "/program/annual-sharing-day");
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Annual Sharing Day", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Moments from Annual Sharing Day." })).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: /Annual Sharing Day/ }).length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByRole("link", { name: "Ask about attending" })).toHaveAttribute("href", "mailto:tuokoleaneinitiative@gmail.com?subject=Annual%20Sharing%20Day%20attendance%20enquiry");
+    expect(screen.getByText(/Sending an enquiry does not reserve a place/)).toBeInTheDocument();
+  });
+
+  it("offers a flexible donation from the current KSh 500 minimum", () => {
+    window.history.replaceState({}, "", "/listing/donate-any-amount");
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Donate any amount", level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" })).toHaveValue("1000");
+    expect(screen.getByText("The current V1 minimum is KSh 500.")).toBeInTheDocument();
+  });
+
   it("renders a new cause listing on a direct route", () => {
     window.history.replaceState({}, "", "/listing/food-shelf");
     render(<App />);
@@ -218,21 +291,26 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getAllByText("Ksh 1,800")).toHaveLength(2);
   });
 
-  it("opens The TI Annual Gala as a dated per-person listing", async () => {
-    window.history.replaceState({}, "", "/listing/ti-annual-gala");
-    const user = userEvent.setup();
+  it("renders approved product listings with product-specific disclosure", () => {
+    window.history.replaceState({}, "", "/listing/school-shoes");
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Buy a pair of school shoes", level: 1 })).toBeInTheDocument();
+    expect(screen.getByText(/Official Bata Kenya product photography/)).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
+    expect(screen.getAllByText("Ksh 2,000")).toHaveLength(2);
+  });
+
+  it("opens The TI Annual Gala as an initiative with no purchase flow", () => {
+    window.history.replaceState({}, "", "/program/ti-annual-gala");
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "The TI Annual Gala", level: 1 })).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(6);
-    expect(screen.getAllByText("1 December 2027")).toHaveLength(2);
-    expect(screen.getAllByText("Ksh 3,000")).toHaveLength(2);
-
-    await user.click(screen.getByRole("button", { name: "Reserve a seat" }));
-
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
-    expect(within(basketDialog).getByText("The TI Annual Gala")).toBeInTheDocument();
-    expect(within(basketDialog).getAllByText(/3,000/).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Reserve a seat" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add to basket" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Payment details" })).not.toBeInTheDocument();
+    expect(screen.getByText("1 December 2027")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Practical ways in." })).not.toBeInTheDocument();
   });
 
   it("adds a fixed-price package from its detail page", async () => {
@@ -326,7 +404,121 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(within(basketDialog).getByText(/1,000/)).toBeInTheDocument();
   });
 
-  it("prevents a custom contribution below the demo minimum", async () => {
+  it("shows verified payment instructions on each listing", () => {
+    window.history.replaceState({}, "", "/listing/meal");
+    render(<App />);
+
+    const paymentDetails = screen.getByRole("region", { name: "Payment details" });
+    expect(within(paymentDetails).getByText("9911113")).toBeInTheDocument();
+    expect(within(paymentDetails).getByText("TUOKOLEANE INITIATIVE CBO")).toBeInTheDocument();
+    expect(within(paymentDetails).getByRole("link", { name: "0740 603 626" })).toHaveAttribute("href", "sms:+254740603626");
+    expect(within(paymentDetails).getByRole("img", { name: "M-PESA" })).toBeInTheDocument();
+    expect(within(paymentDetails).getByRole("img", { name: "T-Kash" })).toBeInTheDocument();
+    expect(within(paymentDetails).getByRole("img", { name: "Airtel Money" })).toBeInTheDocument();
+  });
+
+  it("sends donation, cause and note details to the TI notification API", async () => {
+    window.history.replaceState({}, "", "/listing/meal");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reference: "TI-ABC12345" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+      .getByRole("button", { name: "Continue to payment details" }));
+
+    const checkout = screen.getByRole("dialog", { name: "Send your donation details to TI." });
+    expect(within(checkout).getByText("9911113")).toBeInTheDocument();
+    expect(within(checkout).getByText("TUOKOLEANE INITIATIVE CBO")).toBeInTheDocument();
+    await user.type(within(checkout).getByRole("textbox", { name: "Name *" }), "Amina Donor");
+    await user.type(within(checkout).getByRole("textbox", { name: "Email *" }), "amina@example.com");
+    await user.type(within(checkout).getByRole("textbox", { name: "Phone used for M-PESA *" }), "0740123456");
+    await user.type(within(checkout).getByRole("textbox", { name: "M-PESA confirmation code *" }), "TAA1B2C3D4");
+    await user.type(within(checkout).getByRole("textbox", { name: "A note for the team Optional" }), "Please use this for the next family meal.");
+    await user.click(within(checkout).getByRole("button", { name: "Send donation details" }));
+
+    const confirmation = await screen.findByRole("dialog", { name: "Thank you for choosing to help." });
+    expect(within(confirmation).getByText("Donation details sent")).toBeInTheDocument();
+    expect(within(confirmation).getByText(/TI will match M-PESA code TAA1B2C3D4/)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(request.body));
+    expect(body).toMatchObject({
+      donor: {
+        name: "Amina Donor",
+        email: "amina@example.com",
+        phone: "0740123456",
+        anonymous: false,
+      },
+      note: "Please use this for the next family meal.",
+      mpesaReference: "TAA1B2C3D4",
+      items: [{ packageId: "meal", title: "Buy a meal", quantity: 1, unitAmount: 500 }],
+    });
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([]);
+  });
+
+  it("keeps the basket when the TI notification cannot be sent", async () => {
+    window.history.replaceState({}, "", "/listing/meal");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: "We could not notify the TI team. Please try again.",
+    }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    })));
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+      .getByRole("button", { name: "Continue to payment details" }));
+    const checkout = screen.getByRole("dialog", { name: "Send your donation details to TI." });
+    await user.type(within(checkout).getByRole("textbox", { name: "Name *" }), "Amina Donor");
+    await user.type(within(checkout).getByRole("textbox", { name: "Email *" }), "amina@example.com");
+    await user.type(within(checkout).getByRole("textbox", { name: "Phone used for M-PESA *" }), "0740123456");
+    await user.type(within(checkout).getByRole("textbox", { name: "M-PESA confirmation code *" }), "TAA1B2C3D4");
+    await user.click(within(checkout).getByRole("button", { name: "Send donation details" }));
+
+    expect(await within(checkout).findByRole("alert")).toHaveTextContent("We could not notify the TI team. Please try again.");
+    expect(screen.queryByRole("dialog", { name: "Thank you for choosing to help." })).not.toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
+      { packageId: "meal", quantity: 1, amount: 500 },
+    ]);
+  });
+
+  it("submits a time offer without asking for M-PESA details", async () => {
+    window.history.replaceState({}, "", "/listing/listen");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reference: "TI-TIME1234" }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Add to my plan" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+      .getByRole("button", { name: "Share my interest" }));
+    const checkout = screen.getByRole("dialog", { name: "Tell TI how to reach you." });
+    expect(within(checkout).queryByRole("textbox", { name: /M-PESA confirmation code/ })).not.toBeInTheDocument();
+    await user.type(within(checkout).getByRole("textbox", { name: "Name *" }), "David Volunteer");
+    await user.type(within(checkout).getByRole("textbox", { name: "Email *" }), "david@example.com");
+    await user.click(within(checkout).getByRole("button", { name: "Send my interest" }));
+
+    const confirmation = await screen.findByRole("dialog", { name: "Thank you for choosing to help." });
+    expect(within(confirmation).getByText("Your interest was sent")).toBeInTheDocument();
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(request.body));
+    expect(body.mpesaReference).toBe("");
+    expect(body.items).toEqual([
+      expect.objectContaining({ packageId: "listen", title: "Listen to someone", kind: "time", unitAmount: 0 }),
+    ]);
+  });
+
+  it("prevents a custom contribution below the minimum", async () => {
     window.history.replaceState({}, "", "/listing/school-fees");
     const user = userEvent.setup();
     render(<App />);
@@ -335,7 +527,7 @@ describe("Tuokoleane kindness marketplace", () => {
     await user.clear(amount);
     await user.type(amount, "400");
 
-    expect(screen.getByText("Enter at least Ksh 500 for this demo.")).toBeInTheDocument();
+    expect(screen.getByText("Enter at least Ksh 500.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add to basket" })).toBeDisabled();
   });
 });

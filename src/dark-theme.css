@@ -1,0 +1,617 @@
+:root {
+  color-scheme: light;
+  --page-background: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-subtle: #f7f7f7;
+  --text-primary: #222222;
+  --text-secondary: #6a6a6a;
+  --border-primary: #dddddd;
+  --border-subtle: #ebebeb;
+  --focus-ring: #e13a7e;
+}
+
+.brand-logo {
+  width: 188px;
+  display: block;
+  line-height: 0;
+}
+
+.brand-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.brand-symbol {
+  display: block;
+  line-height: 0;
+}
+
+.brand-symbol img {
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 1050px) {
+  .brand-logo { width: 176px; }
+}
+
+@media (max-width: 820px) {
+  .brand-logo { width: 166px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    color: #f5f6fa;
+    background: #101219;
+    --page-background: #101219;
+    --surface-raised: #191c25;
+    --surface-subtle: #20242f;
+    --text-primary: #f5f6fa;
+    --text-secondary: #adb3c1;
+    --border-primary: #3a3f4d;
+    --border-subtle: #2b303c;
+    --focus-ring: #ff78ad;
+    --brand: #aeb8ff;
+    --brand-hover: #c4cbff;
+    --brand-soft: #252a45;
+    --accent: #ff78ad;
+    --accent-hover: #ff91ba;
+    --accent-soft: #48243a;
+    --accent-on-dark: #ff91ba;
+    --ink: var(--text-primary);
+    --muted: var(--text-secondary);
+    --line: var(--border-primary);
+    --soft-line: var(--border-subtle);
+    --surface: var(--surface-subtle);
+    --paper: var(--surface-raised);
+    --shadow: 0 14px 42px rgba(0, 0, 0, .42);
+  }
+
+  body,
+  .app-shell,
+  .program-page,
+  .listing-page,
+  .about-page,
+  .gallery-page,
+  .not-found {
+    background: var(--page-background);
+    color: var(--text-primary);
+  }
+
+  img,
+  picture {
+    filter: none;
+  }
+
+  :focus-visible {
+    outline-color: var(--focus-ring);
+  }
+
+  .site-header {
+    border-color: var(--border-subtle);
+    background: rgba(16, 18, 25, .96);
+  }
+
+  .nav-destination {
+    color: var(--text-secondary);
+  }
+
+  .nav-destination:hover,
+  .nav-destination-active {
+    border-color: var(--border-primary);
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .28);
+  }
+
+  .nav-destination-image {
+    border-color: #f7f7f7;
+    background: #ffffff;
+  }
+
+  .basket-button,
+  .menu-button,
+  .icon-button,
+  .mobile-nav,
+  .discovery-bar {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+
+  .basket-button:hover,
+  .menu-button:hover {
+    border-color: #555c6c;
+    background: var(--surface-subtle);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .3);
+  }
+
+  .mobile-nav a:hover,
+  .discovery-bar > a:not(.discovery-search):hover {
+    background: var(--surface-subtle);
+  }
+
+  .discovery-bar > a:not(.discovery-search) {
+    border-color: var(--border-primary);
+  }
+
+  .discovery-bar span,
+  .section-heading > p:not(.eyebrow),
+  .package-body > p,
+  .package-meta,
+  .empty-results p,
+  .campaign-heading > p,
+  .ti-gallery-heading > p,
+  .program-hero-copy > p:not(.eyebrow),
+  .program-hero-media figcaption,
+  .listing-heading > .listing-lede,
+  .photo-disclosure,
+  .listing-intro p,
+  .listing-highlights small,
+  .impact-section li p,
+  .pledge-price span,
+  .pledge-summary span,
+  .gallery-layer header span,
+  .empty-basket p,
+  .basket-item-copy small,
+  .basket-summary > p,
+  .checkout-lede,
+  .check-row small,
+  .form-fineprint,
+  .order-card-head span,
+  .order-line small,
+  .order-note,
+  .confirmation-modal > p:not(.eyebrow),
+  .confirmation-next span,
+  .not-found > p:not(.eyebrow) {
+    color: var(--text-secondary);
+  }
+
+  .reach-section,
+  .values-section,
+  .marketplace,
+  .programs,
+  .program-overview,
+  .program-gallery,
+  .program-related,
+  .related-section,
+  .about-section {
+    background: var(--page-background);
+  }
+
+  .reach-mark,
+  .footer-payment-badges img,
+  .payment-badges img,
+  .institution-card,
+  .institution-logo-card,
+  .partner-logo-card,
+  .payment-logo-card {
+    border-color: #e5e7eb;
+    background: #ffffff;
+    color: #343844;
+  }
+
+  .reach-mark {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+  }
+
+  .reach-mark > span {
+    color: #454954;
+  }
+
+  .reach-logo,
+  .institution-card img,
+  .institution-logo-card img,
+  .partner-logo-card img,
+  .payment-logo-card img,
+  .footer-payment-badges img,
+  .payment-badges img {
+    filter: none;
+  }
+
+  .value-card {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+  }
+
+  .value-card-primary {
+    border-color: #5963b2;
+    background: linear-gradient(135deg, #23295f 0%, #30295f 64%, #632f69 100%);
+  }
+
+  .value-card p,
+  .model-stats strong {
+    color: #aeb8ff;
+  }
+
+  .value-card > div:last-child > span,
+  .model-stats span {
+    color: var(--text-secondary);
+  }
+
+  .value-card-primary > div:last-child > span {
+    color: rgba(255, 255, 255, .78);
+  }
+
+  .value-line::before {
+    background: #4a5268;
+  }
+
+  .value-line i {
+    border-color: var(--surface-raised);
+    background: #aeb8ff;
+    box-shadow: 0 0 0 1px #4a5268;
+  }
+
+  .value-people i {
+    background: #34394a;
+  }
+
+  .value-people i:nth-child(2) {
+    background: #454b60;
+  }
+
+  .value-people i::before {
+    border-color: var(--surface-raised);
+    background: #aeb8ff;
+  }
+
+  .search-field,
+  .listing-search-results,
+  .category-tabs button,
+  .ti-gallery-toolbar,
+  .ti-gallery-more .secondary-button,
+  .show-photos {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+
+  .search-field input,
+  .amount-field input,
+  .form-row input,
+  .form-row textarea,
+  .form-row.two-columns input {
+    color: var(--text-primary);
+    caret-color: var(--accent);
+  }
+
+  .listing-search-results button {
+    color: var(--text-primary);
+  }
+
+  .listing-search-results button:hover,
+  .listing-search-results button.active,
+  .ti-gallery-tabs button:hover {
+    background: var(--surface-subtle);
+  }
+
+  .listing-search-results b,
+  .package-title-row > strong,
+  .empty-results button {
+    color: var(--accent-hover);
+  }
+
+  .category-tabs button {
+    color: var(--text-secondary);
+  }
+
+  .package-photo-link,
+  .photo-tile,
+  .listing-search-results img,
+  .campaign-card-media,
+  .ti-gallery-card,
+  .ti-gallery-grid {
+    background: var(--surface-subtle);
+  }
+
+  .package-photo-link > .package-badge,
+  .package-event-date,
+  .program-card-photo > span,
+  .campaign-dialog-media span {
+    background: rgba(255, 255, 255, .94);
+    color: #343844;
+  }
+
+  .package-photo-link > .package-badge-featured,
+  .listing-featured-badge,
+  .program-featured-badge {
+    border-color: rgba(216, 177, 82, .46);
+    background: #2e291e;
+    color: #f2d58b;
+  }
+
+  .program-card {
+    border-color: var(--border-primary);
+    background: color-mix(in srgb, var(--program-accent) 12%, var(--surface-raised));
+  }
+
+  .program-card-featured {
+    border-color: rgba(242, 213, 139, .5);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .3);
+  }
+
+  .program-event-date,
+  .program-page-date {
+    color: #f2d58b;
+  }
+
+  .program-page-date {
+    border-color: rgba(242, 213, 139, .34);
+    background: #2e291e;
+  }
+
+  .mobile-program-card {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+
+  .mobile-catalogue-controls button {
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  .mobile-catalogue-controls button svg {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+  }
+
+  .mobile-package-card {
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  .mobile-package-copy > span:not(.mobile-package-program),
+  .mobile-program-copy > span,
+  .mobile-catalogue-controls > span {
+    color: var(--text-secondary);
+  }
+
+  .mobile-package-image {
+    background: var(--surface-subtle);
+  }
+
+  .mobile-program-image {
+    background: var(--surface-subtle);
+  }
+
+  .mobile-package-program {
+    color: var(--text-secondary);
+  }
+
+  .mobile-program-copy > small,
+  .mobile-program-copy > em {
+    color: #aeb8ff;
+  }
+
+  .mobile-program-copy > time {
+    color: #f2d58b;
+  }
+
+  .mobile-package-copy b {
+    color: var(--text-primary);
+  }
+
+  .program-card-summary,
+  .program-detail-grid li,
+  .listing-section > p,
+  .plain-list li,
+  .program-participation p {
+    color: #c1c6d1;
+  }
+
+  .program-tags span {
+    border-color: color-mix(in srgb, var(--program-accent) 35%, var(--border-primary));
+    background: rgba(255, 255, 255, .06);
+    color: #d4d7df;
+  }
+
+  .campaign-section,
+  .ti-gallery-section,
+  .manifesto-section {
+    border-color: var(--border-subtle);
+    background: #151821;
+  }
+
+  .campaign-card,
+  .campaign-dialog,
+  .program-detail-grid article,
+  .pledge-card,
+  .order-card,
+  .confirmation-modal {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+
+  .campaign-card {
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .24);
+  }
+
+  .campaign-card:hover {
+    border-color: color-mix(in srgb, var(--campaign-accent) 56%, var(--border-primary));
+    box-shadow: 0 18px 44px rgba(0, 0, 0, .34);
+  }
+
+  .campaign-card-body > span,
+  .campaign-dialog-description,
+  .campaign-dialog-note {
+    color: var(--text-secondary);
+  }
+
+  .campaign-note {
+    color: #9299a9;
+  }
+
+  .campaign-dialog-lede {
+    color: #d6d9e1;
+  }
+
+  .manifesto-grid h2,
+  .manifesto-grid > div:last-child > p {
+    color: var(--text-primary);
+  }
+
+  .ti-gallery-toolbar {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .22);
+  }
+
+  .ti-gallery-tabs button {
+    color: var(--text-secondary);
+  }
+
+  .ti-gallery-tabs button small {
+    background: #2c303b;
+    color: #b9bec9;
+  }
+
+  .program-detail-grid article {
+    background: color-mix(in srgb, var(--program-accent) 10%, var(--surface-raised));
+  }
+
+  .program-scope,
+  .impact-section li > span,
+  .empty-basket > span,
+  .confirmation-next {
+    background: var(--brand-soft);
+    color: #d5d9ff;
+  }
+
+  .program-scope strong,
+  .program-scope svg,
+  .listing-highlights svg,
+  .feature-list svg,
+  .checkout-wordmark {
+    color: #aeb8ff;
+  }
+
+  .back-link:hover,
+  .listing-actions button:hover,
+  .gallery-layer header button {
+    background: var(--surface-subtle);
+  }
+
+  .listing-event-date {
+    border-color: var(--border-primary);
+    background: var(--surface-subtle);
+    color: #c8ceff;
+  }
+
+  .coordinator-mark {
+    border-color: var(--border-primary);
+    background: var(--surface-raised);
+  }
+
+  .pledge-card {
+    box-shadow: 0 10px 32px rgba(0, 0, 0, .32);
+  }
+
+  .amount-field > div {
+    border-color: #565c6a;
+    background: #12151d;
+  }
+
+  .listing-payment-details,
+  .checkout-payment-card {
+    border-color: #3d4252;
+    background: #1e2230;
+  }
+
+  .listing-payment-details > p,
+  .checkout-payment-card ol {
+    color: #bac0cf;
+  }
+
+  .checkout-payment-card dl {
+    border-color: #424858;
+    background: #424858;
+  }
+
+  .checkout-payment-card dl > div {
+    background: #171a23;
+  }
+
+  .gallery-layer,
+  .checkout-layer,
+  .basket-drawer {
+    background: var(--page-background);
+    color: var(--text-primary);
+  }
+
+  .gallery-layer header {
+    border-color: var(--border-subtle);
+    background: rgba(16, 18, 25, .96);
+  }
+
+  .gallery-list img,
+  .order-line img,
+  .basket-item > img,
+  .package-photo-link img,
+  .photo-tile img,
+  .campaign-card-media img,
+  .program-card-photo img,
+  .program-hero-media img,
+  .ti-gallery-card img,
+  .ti-gallery-stage img {
+    filter: none;
+  }
+
+  .drawer-backdrop,
+  .modal-backdrop,
+  .campaign-dialog-backdrop {
+    background: rgba(0, 0, 0, .72);
+  }
+
+  .quantity-control {
+    border-color: var(--border-primary);
+    background: var(--surface-subtle);
+  }
+
+  .checkout-header {
+    border-color: var(--border-primary);
+    background: var(--page-background);
+  }
+
+  .form-row input,
+  .form-row textarea,
+  .form-row.two-columns input {
+    border-color: #565c6a;
+    background: #141720;
+  }
+
+  .form-row input::placeholder,
+  .form-row textarea::placeholder,
+  .form-row.two-columns input::placeholder {
+    color: #7f8695;
+  }
+
+  .submission-error {
+    background: #3c2026;
+    color: #ffb4bb;
+  }
+
+  .field-error,
+  .form-error {
+    color: #ff9fa6;
+  }
+
+  .site-footer {
+    background: #0c0e1d;
+  }
+
+  .footer-symbol {
+    background: transparent;
+  }
+
+  .about-hero,
+  .about-story,
+  .about-values,
+  .about-reach,
+  .gallery-hero,
+  .gallery-collection {
+    background: var(--page-background);
+    color: var(--text-primary);
+  }
+}

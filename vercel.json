@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/about",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/gallery",
+      "destination": "/index.html"
+    },
+    {
       "source": "/listing/(.*)",
       "destination": "/index.html"
     },
