@@ -3,6 +3,8 @@ import {
   validateDonationSubmission,
 } from "../src/donations.js";
 
+const MAX_REQUEST_BYTES = 30_000;
+
 const kenyaCurrency = new Intl.NumberFormat("en-KE", {
   style: "currency",
   currency: "KES",
@@ -29,6 +31,36 @@ function getEnvironment() {
 function requestComesFromSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   return !origin || origin === new URL(request.url).origin;
+}
+
+async function readRequestBody(request: Request) {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength) {
+    const declaredLength = Number(contentLength);
+    if (!Number.isFinite(declaredLength) || declaredLength < 0 || declaredLength > MAX_REQUEST_BYTES) {
+      return { ok: false as const, tooLarge: true };
+    }
+  }
+
+  if (!request.body) return { ok: true as const, text: "" };
+
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let bytesRead = 0;
+  let text = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytesRead += value.byteLength;
+    if (bytesRead > MAX_REQUEST_BYTES) {
+      await reader.cancel();
+      return { ok: false as const, tooLarge: true };
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+
+  return { ok: true as const, text: text + decoder.decode() };
 }
 
 function buildNotificationText(
@@ -69,14 +101,18 @@ async function handleDonation(request: Request) {
     return json({ error: "We could not accept these details. Please return to the TI website and try again." }, 403);
   }
 
-  const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 30_000) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return json({ error: "Send donation details as JSON." }, 415);
+  }
+
+  const body = await readRequestBody(request);
+  if (!body.ok) {
     return json({ error: "There is too much information in this form. Please shorten your note and try again." }, 413);
   }
 
   let payload: unknown;
   try {
-    payload = await request.json();
+    payload = JSON.parse(body.text);
   } catch {
     return json({ error: "We could not read your donation details. Please check the form and try again." }, 400);
   }

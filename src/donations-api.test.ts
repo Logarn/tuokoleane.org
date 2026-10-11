@@ -69,6 +69,66 @@ describe("donation notification function", () => {
     expect(email.text).toContain("Note: Please use this for the next family meal.");
   });
 
+  it("uses the server catalogue instead of client-supplied titles and kinds", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test_key");
+    vi.stubEnv("DONATION_EMAIL_FROM", "Tuokoleane Initiative <donations@tuokoleane.org>");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "email_123" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await donationsFunction.fetch(donationRequest({
+      ...validSubmission,
+      items: [{
+        ...validSubmission.items[0],
+        title: "A made-up cause",
+        kind: "time",
+      }],
+    }));
+
+    expect(response.status).toBe(201);
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const email = JSON.parse(String(request.body));
+    expect(email.subject).toBe("New donation submitted: Ksh 500 for Buy a meal");
+    expect(email.text).not.toContain("A made-up cause");
+  });
+
+  it("rejects unknown catalogue items and changed fixed prices", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const unknownResponse = await donationsFunction.fetch(donationRequest({
+      ...validSubmission,
+      items: [{ ...validSubmission.items[0], packageId: "not-in-catalogue" }],
+    }));
+    expect(unknownResponse.status).toBe(400);
+
+    const changedPriceResponse = await donationsFunction.fetch(donationRequest({
+      ...validSubmission,
+      items: [{ ...validSubmission.items[0], unitAmount: 1 }],
+    }));
+    expect(changedPriceResponse.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("measures the received body instead of trusting Content-Length", async () => {
+    const oversizedPayload = JSON.stringify({
+      ...validSubmission,
+      padding: "x".repeat(31_000),
+    });
+    const request = new Request("https://tuokoleane.org/api/donations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://tuokoleane.org",
+      },
+      body: oversizedPayload,
+    });
+    request.headers.delete("content-length");
+
+    const response = await donationsFunction.fetch(request);
+
+    expect(response.status).toBe(413);
+  });
+
   it("rejects incomplete payment details before calling the email provider", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

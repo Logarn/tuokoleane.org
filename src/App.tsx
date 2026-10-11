@@ -241,6 +241,14 @@ function readBasket(): BasketItem[] {
   }
 }
 
+function decodeRouteSegment(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return null;
+  }
+}
+
 function AppContent() {
   const [path, setPath] = useState(() => window.location.pathname);
   const [basket, setBasket] = useState<BasketItem[]>(readBasket);
@@ -249,12 +257,14 @@ function AppContent() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
-  const routePackage = path.startsWith("/listing/")
-    ? packageById.get(decodeURIComponent(path.slice("/listing/".length)))
-    : undefined;
-  const routeProgram = path.startsWith("/program/")
-    ? programById.get(decodeURIComponent(path.slice("/program/".length)))
-    : undefined;
+  const packageRouteId = path.startsWith("/listing/")
+    ? decodeRouteSegment(path.slice("/listing/".length))
+    : null;
+  const programRouteId = path.startsWith("/program/")
+    ? decodeRouteSegment(path.slice("/program/".length))
+    : null;
+  const routePackage = packageRouteId ? packageById.get(packageRouteId) : undefined;
+  const routeProgram = programRouteId ? programById.get(programRouteId) : undefined;
 
   useEffect(() => {
     const updatePath = () => setPath(window.location.pathname);
@@ -474,10 +484,10 @@ function Brand({ onNavigate }: { onNavigate: (path: string) => void }) {
 }
 
 const headerDestinations = [
-  { label: "Give", path: "/", hash: "marketplace", image: "/images/listings/meal/02.jpg" },
-  { label: "About TI", path: "/about", image: "/images/ti-gallery/ti-gallery-51.jpg" },
-  { label: "Gallery", path: "/gallery", image: "/images/ti-gallery/ti-gallery-75.jpg" },
-  { label: "How it works", path: "/", hash: "how-it-works", image: "/images/listings/mentor/02.jpg" },
+  { label: "Give", path: "/", hash: "marketplace", image: "/images/nav-thumbnails/give.jpg" },
+  { label: "About TI", path: "/about", image: "/images/nav-thumbnails/about.jpg" },
+  { label: "Gallery", path: "/gallery", image: "/images/nav-thumbnails/gallery.jpg" },
+  { label: "How it works", path: "/", hash: "how-it-works", image: "/images/nav-thumbnails/how-it-works.jpg" },
 ];
 
 function ThemeControl({ placement }: { placement: "header" | "menu" }) {
@@ -605,7 +615,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
 
   const searchMatches = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return kindnessPackages;
+    if (!normalizedQuery) return kindnessPackages.slice(0, 6);
 
     return kindnessPackages.filter((item) => [
       item.title,
@@ -614,7 +624,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
       item.category,
       item.program,
       item.label,
-    ].join(" ").toLowerCase().includes(normalizedQuery));
+    ].join(" ").toLowerCase().includes(normalizedQuery)).slice(0, 8);
   }, [query]);
 
   const chooseSearchResult = (item: KindnessPackage) => {
@@ -658,7 +668,16 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
   return (
     <main id="top">
       <section className="home-hero" aria-label="Tuokoleane Catalogue of Kindness">
-        <img className="home-hero-image" src="/images/listings/meal/02.jpg" alt="A family sharing a meal together" />
+        <img
+          className="home-hero-image"
+          src="/images/listings/meal/02.jpg"
+          srcSet="/images/hero/family-meal-640.jpg 640w, /images/hero/family-meal-960.jpg 960w, /images/listings/meal/02.jpg 1440w"
+          sizes="100vw"
+          width="1440"
+          height="960"
+          fetchPriority="high"
+          alt="A family sharing a meal together"
+        />
         <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-copy page-width">
           <h1>What if touching a life was as easy as shopping online?</h1>
@@ -718,7 +737,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
                     onClick={() => chooseSearchResult(item)}
                     key={item.id}
                   >
-                    <img src={item.images[0].src} alt="" />
+                    <span className="listing-search-icon" aria-hidden="true"><item.icon size={22} /></span>
                     <span>
                       <strong>{item.title}</strong>
                       <small>{item.category} · {item.program}</small>
@@ -834,7 +853,7 @@ function ReachSection() {
             <div className="reach-set" key={set} aria-hidden={set === 1}>
               {placesReached.map((place) => (
                 <span className="reach-mark" key={`${set}-${place.name}`}>
-                  <img className="reach-logo" src={place.logo} alt={`${place.name} official logo`} />
+                  <img className="reach-logo" src={place.logo} alt={`${place.name} official logo`} loading="lazy" decoding="async" />
                   <span>{place.name}</span>
                 </span>
               ))}

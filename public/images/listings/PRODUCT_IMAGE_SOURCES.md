@@ -12,7 +12,7 @@ Product photography is used to show what each contribution is intended to fund. 
 
 ## Grocery basket
 
-- `grocery-basket/01.png`: project-generated composition using the sourced product photographs listed below
+- `grocery-basket/01.jpg`: project-generated composition using the sourced product photographs listed below
 - `grocery-basket/02.webp`: Jogoo product photograph from Unga Group PLC, https://unga-group.com/brands/jogoo
 - `grocery-basket/03.jpg`: Fresh Fri 2L product photograph from Edgex Magic Kenya, https://edgexm.co.ke/store/category/cooking-oil-fat/fresh-fri-vegetable-cooking-oil-2l/
 - `grocery-basket/04.webp`: Kensalt product photograph from Kensalt Ltd, https://www.kensaltltd.com/

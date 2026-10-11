@@ -136,7 +136,7 @@ export const kindnessPackages: KindnessPackage[] = [
     specialBadge: "Angel's Favourite",
     icon: ShoppingBasket,
     includes: ["Maize meal such as Jogoo", "Cooking oil such as Fresh Fri", "Salt, laundry soap and selected dry foods"],
-    images: productGallery("grocery-basket", ["01.png", "02.webp", "03.jpg", "04.webp", "05.png"], [
+    images: productGallery("grocery-basket", ["01.jpg", "02.webp", "03.jpg", "04.webp", "05.png"], [
       "a complete Kenyan grocery basket with familiar staples",
       "Jogoo maize meal",
       "Fresh Fri cooking oil",

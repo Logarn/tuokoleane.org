@@ -272,7 +272,7 @@ img { display: block; max-width: 100%; }
 .listing-search-results button { width: 100%; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; color: var(--ink); text-align: left; }
 .listing-search-results button:hover, .listing-search-results button.active { background: #f2f5fa; }
 .listing-search-results button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.listing-search-results img { width: 56px; height: 50px; object-fit: cover; border-radius: 10px; background: var(--surface); }
+.listing-search-icon { width: 56px; height: 50px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--brand); }
 .listing-search-results button > span { min-width: 0; display: grid; gap: 4px; }
 .listing-search-results strong { overflow: hidden; font-size: 14px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .listing-search-results small { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
@@ -776,7 +776,7 @@ img { display: block; max-width: 100%; }
   .hero-lede { font-size: 16px; }
   .listing-search-results { width: 100%; max-height: 390px; }
   .listing-search-results button { grid-template-columns: 50px minmax(0, 1fr); }
-  .listing-search-results img { width: 50px; height: 46px; }
+  .listing-search-icon { width: 50px; height: 46px; }
   .listing-search-results b { grid-column: 2; padding-left: 0; margin-top: -4px; }
   .reach-section { padding-top: 38px; }
   .reach-heading h2 { font-size: 32px; }

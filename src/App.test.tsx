@@ -143,6 +143,13 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
 
+  it("shows a controlled not-found page for malformed route encoding", () => {
+    window.history.replaceState({}, "", "/listing/%");
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Let’s get you back to a way you can help." })).toBeInTheDocument();
+  });
+
   it("searches listings in a dropdown and opens the selected result", async () => {
     const user = userEvent.setup();
     render(<App />);

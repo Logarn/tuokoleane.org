@@ -1,3 +1,5 @@
+import { donationCatalogueById } from "./donation-catalogue";
+
 export const TI_PAYMENT_DETAILS = {
   tillNumber: "9911113",
   accountName: "TUOKOLEANE INITIATIVE CBO",
@@ -98,9 +100,6 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
       !isRecord(item)
       || !isShortString(item.packageId, 80)
       || !/^[a-z0-9-]+$/.test(item.packageId)
-      || !isShortString(item.title, 160)
-      || !item.title.trim()
-      || !["fixed", "custom", "time"].includes(String(item.kind))
       || !Number.isInteger(item.quantity)
       || Number(item.quantity) < 1
       || Number(item.quantity) > 99
@@ -111,12 +110,32 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
       return { ok: false, error: "One item in your basket could not be sent. Please remove it and try again." };
     }
 
+    const catalogueItem = donationCatalogueById.get(item.packageId);
+    if (!catalogueItem) {
+      return { ok: false, error: "One item is no longer available. Please remove it and try again." };
+    }
+
+    const submittedAmount = Number(item.unitAmount);
+    const unitAmount = catalogueItem.kind === "fixed"
+      ? catalogueItem.price ?? 0
+      : catalogueItem.kind === "custom"
+        ? submittedAmount
+        : 0;
+
+    if (
+      (catalogueItem.kind === "fixed" && submittedAmount !== unitAmount)
+      || (catalogueItem.kind === "custom" && submittedAmount < (catalogueItem.minimumAmount ?? 500))
+      || (catalogueItem.kind === "time" && submittedAmount !== 0)
+    ) {
+      return { ok: false, error: "One item has changed since it was added. Please refresh the page and try again." };
+    }
+
     items.push({
-      packageId: item.packageId,
-      title: item.title.trim(),
-      kind: item.kind as DonationItem["kind"],
+      packageId: catalogueItem.id,
+      title: catalogueItem.title,
+      kind: catalogueItem.kind,
       quantity: Number(item.quantity),
-      unitAmount: Number(item.unitAmount),
+      unitAmount,
     });
   }
 
