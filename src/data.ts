@@ -8,6 +8,7 @@ import {
   PackageOpen,
   Salad,
   Sprout,
+  Ticket,
 } from "lucide-react";
 
 export type PackageKind = "fixed" | "custom" | "time";
@@ -35,6 +36,12 @@ export interface KindnessPackage {
   suitableFor: string;
   coordination: string;
   goodToKnow: string[];
+  featured?: boolean;
+  eventDate?: string;
+  eventDateShort?: string;
+  eventDateIso?: string;
+  priceUnit?: string;
+  actionLabel?: string;
 }
 
 export interface Program {
@@ -63,6 +70,44 @@ const gallery = (id: string, descriptions: string[]): GalleryImage[] =>
   }));
 
 export const kindnessPackages: KindnessPackage[] = [
+  {
+    id: "ti-annual-gala",
+    title: "The TI Annual Gala",
+    shortDescription: "Join one grand evening of dinner, connection and generous pledges.",
+    description:
+      "The TI Annual Gala is Tuokoleane Initiative’s once-a-year dinner. Guests share a beautiful evening, hear more about the work and can choose whether to make a voluntary pledge through an auction-style giving experience. The invitation is open to everyone.",
+    category: "Community",
+    program: "Tuokoleane Initiative",
+    kind: "fixed",
+    price: 3000,
+    duration: "Annual dinner",
+    label: "Featured",
+    icon: Ticket,
+    includes: [
+      "One admission to the annual Gala dinner",
+      "The full evening programme and auction-style pledge experience",
+      "A seat in a room built around connection and giving",
+    ],
+    images: gallery("ti-annual-gala", [
+      "Tuokoleane community members in a representative annual Gala dinner concept",
+      "Tuokoleane community members in a representative Gala welcome concept",
+      "Tuokoleane community members in a representative voluntary pledge concept",
+      "Tuokoleane community members in a representative Gala conversation concept",
+    ]),
+    suitableFor: "Anyone who would like to join the TI community for its annual signature evening.",
+    coordination: "Tuokoleane will confirm the venue, programme and guest details before the event.",
+    goodToKnow: [
+      "The ticket price is Ksh 3,000 per person.",
+      "Auction pledges are voluntary and separate from the ticket.",
+      "Guest appearances and venue details are confirmed only when announced by Tuokoleane.",
+    ],
+    featured: true,
+    eventDate: "1 December 2027",
+    eventDateShort: "1 Dec 2027",
+    eventDateIso: "2027-12-01",
+    priceUnit: "per person",
+    actionLabel: "Reserve a seat",
+  },
   {
     id: "meal",
     title: "Buy a meal",

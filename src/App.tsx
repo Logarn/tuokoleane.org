@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  CalendarDays,
   Check,
   CheckCircle2,
   ChevronRight,
@@ -16,6 +17,7 @@ import {
   Share2,
   ShieldCheck,
   ShoppingBag,
+  Ticket,
   Users,
   X,
 } from "lucide-react";
@@ -601,7 +603,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           </article>
         </div>
         <div className="page-width model-stats" aria-label="Catalogue overview">
-          <div><strong>12</strong><span>practical ways to help</span></div>
+          <div><strong>{kindnessPackages.length}</strong><span>practical ways to help</span></div>
           <div><strong>3</strong><span>ways to give: money, time or goods</span></div>
           <div><strong>{currency.format(500)}</strong><span>starting contribution</span></div>
         </div>
@@ -901,10 +903,15 @@ function PackageCard({ item, onNavigate }: { item: KindnessPackage; onNavigate: 
   };
 
   return (
-    <article className="package-card">
+    <article className={`package-card${item.featured ? " package-card-featured" : ""}`}>
       <a className="package-photo-link" href={path} onClick={open} aria-label={`View ${item.title}`}>
         <img src={item.images[0].src} alt={item.images[0].alt} />
-        <span>{item.label}</span>
+        <span className={`package-badge${item.featured ? " package-badge-featured" : ""}`}>{item.label}</span>
+        {item.eventDate && (
+          <time className="package-event-date" dateTime={item.eventDateIso}>
+            <CalendarDays size={13} /> {item.eventDateShort ?? item.eventDate}
+          </time>
+        )}
       </a>
       <div className="package-body">
         <div className="package-title-row">
@@ -912,7 +919,10 @@ function PackageCard({ item, onNavigate }: { item: KindnessPackage; onNavigate: 
           <strong>{packagePrice(item)}</strong>
         </div>
         <p>{item.shortDescription}</p>
-        <div className="package-meta"><span>{item.program}</span><span><Clock3 size={14} /> {item.duration}</span></div>
+        <div className="package-meta">
+          <span>{item.program}</span>
+          <span>{item.priceUnit ? <Ticket size={14} /> : <Clock3 size={14} />} {item.priceUnit ?? item.duration}</span>
+        </div>
       </div>
     </article>
   );
@@ -949,6 +959,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
 
   const amount = item.kind === "custom" ? Number(customAmount) || 0 : item.price ?? 0;
   const minimumAmount = item.minimumAmount ?? 500;
+  const isEvent = Boolean(item.eventDate);
   const related = kindnessPackages.filter((candidate) => candidate.id !== item.id && candidate.category === item.category).slice(0, 3);
   const fallbackRelated = related.length >= 3 ? related : [...related, ...kindnessPackages.filter((candidate) => candidate.id !== item.id && !related.includes(candidate))].slice(0, 3);
 
@@ -963,9 +974,19 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           </div>
         </div>
         <div className="listing-heading">
-          <p className="eyebrow">{item.program}</p>
+          <div className="listing-kicker-row">
+            <p className="eyebrow">{item.program}</p>
+            {item.featured && <span className="listing-featured-badge">Featured annual event</span>}
+          </div>
           <h1>{item.title}</h1>
-          <p>{item.shortDescription}</p>
+          <p className="listing-lede">{item.shortDescription}</p>
+          {item.eventDate && (
+            <div className="listing-event-date">
+              <CalendarDays size={18} />
+              <span>Event date</span>
+              <time dateTime={item.eventDateIso}>{item.eventDate}</time>
+            </div>
+          )}
         </div>
 
         <div className="photo-grid">
@@ -976,13 +997,17 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           ))}
           <button className="show-photos" onClick={() => setGalleryOpen(true)}><Images size={17} /> Show all photos</button>
         </div>
-        <p className="photo-disclosure">Representative imagery created for this prototype. These are not photographs of named beneficiaries or completed Tuokoleane activities.</p>
+        <p className="photo-disclosure">
+          {isEvent
+            ? "These representative Gala composites feature people from Tuokoleane’s real photo archive. They do not document a completed Gala."
+            : "Representative imagery created for this prototype. These are not photographs of named beneficiaries or completed Tuokoleane activities."}
+        </p>
 
         <div className="listing-content-grid">
           <div className="listing-content">
             <section className="listing-intro">
               <div>
-                <h2>{item.label} · {item.category}</h2>
+                <h2>{isEvent ? `Annual Gala · ${item.category}` : `${item.label} · ${item.category}`}</h2>
                 <p>Coordinated in Kenya by Tuokoleane Initiative</p>
               </div>
               <span className="coordinator-mark" aria-label="Tuokoleane coordinated"><img src="/images/brand/tuokoleane-logo-blue.png" alt="" /></span>
@@ -991,7 +1016,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
             <section className="listing-highlights" aria-label="Listing highlights">
               <div><CheckCircle2 /><span><strong>Clear starting point</strong><small>{item.suitableFor}</small></span></div>
               <div><Users /><span><strong>Locally coordinated</strong><small>{item.coordination}</small></span></div>
-              <div><ShieldCheck /><span><strong>Boundaries first</strong><small>No recipient or outcome is promised before the TI team confirms it.</small></span></div>
+              <div><ShieldCheck /><span><strong>Boundaries first</strong><small>{isEvent ? "The ticket covers admission. Any auction pledge is separate and entirely voluntary." : "No recipient or outcome is promised before the TI team confirms it."}</small></span></div>
             </section>
 
             <section className="listing-section">
@@ -1000,7 +1025,7 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
             </section>
 
             <section className="listing-section">
-              <h2>What your pledge includes</h2>
+              <h2>{isEvent ? "What your ticket includes" : "What your pledge includes"}</h2>
               <ul className="feature-list">
                 {item.includes.map((entry) => <li key={entry}><Check size={18} /> {entry}</li>)}
               </ul>
@@ -1014,24 +1039,46 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
             <section className="listing-section impact-section">
               <p className="eyebrow">What happens next</p>
               <ol>
-                <li><span>1</span><div><strong>You create a pledge</strong><p>This prototype records the intent in your browser only.</p></div></li>
-                <li><span>2</span><div><strong>TI confirms the opportunity</strong><p>In production, the team would check the need, timing and practical conditions.</p></div></li>
-                <li><span>3</span><div><strong>You receive an update</strong><p>When evidence is available, TI can report what was allocated and what happened.</p></div></li>
+                {isEvent ? (
+                  <>
+                    <li><span>1</span><div><strong>You reserve a seat</strong><p>Add one or more tickets to your basket and review the reservation details.</p></div></li>
+                    <li><span>2</span><div><strong>TI confirms the evening</strong><p>The team shares the venue, programme and final attendance details when they are ready.</p></div></li>
+                    <li><span>3</span><div><strong>You choose how to take part</strong><p>Join the dinner and decide for yourself whether to make a voluntary auction pledge.</p></div></li>
+                  </>
+                ) : (
+                  <>
+                    <li><span>1</span><div><strong>You create a pledge</strong><p>This prototype records the intent in your browser only.</p></div></li>
+                    <li><span>2</span><div><strong>TI confirms the opportunity</strong><p>In production, the team would check the need, timing and practical conditions.</p></div></li>
+                    <li><span>3</span><div><strong>You receive an update</strong><p>When evidence is available, TI can report what was allocated and what happened.</p></div></li>
+                  </>
+                )}
               </ol>
             </section>
           </div>
 
-          <aside className="pledge-card" aria-label="Create a pledge">
-            <div className="pledge-price"><strong>{item.kind === "custom" ? "Choose your amount" : packagePrice(item)}</strong><span>{item.kind === "time" ? item.duration : "per pledge"}</span></div>
+          <aside className="pledge-card" aria-label={item.actionLabel ?? "Create a pledge"}>
+            <div className="pledge-price"><strong>{item.kind === "custom" ? "Choose your amount" : packagePrice(item)}</strong><span>{item.kind === "time" ? item.duration : item.priceUnit ?? "per pledge"}</span></div>
             {item.kind === "custom" && (
               <label className="amount-field">
                 <span>Your contribution</span>
                 <div><b>KSh</b><input inputMode="numeric" value={customAmount} onChange={(event) => setCustomAmount(event.target.value.replace(/\D/g, ""))} aria-label="Contribution amount in Kenyan shillings" /></div>
               </label>
             )}
-            <div className="pledge-summary"><span>Programme</span><strong>{item.program}</strong><span>Commitment</span><strong>{item.kind === "time" ? item.duration : amount ? currency.format(amount) : "Choose amount"}</strong></div>
+            <div className="pledge-summary">
+              {isEvent ? (
+                <>
+                  <span>Event date</span><strong><time dateTime={item.eventDateIso}>{item.eventDate}</time></strong>
+                  <span>Ticket</span><strong>{packagePrice(item)}</strong>
+                </>
+              ) : (
+                <>
+                  <span>Programme</span><strong>{item.program}</strong>
+                  <span>Commitment</span><strong>{item.kind === "time" ? item.duration : amount ? currency.format(amount) : "Choose amount"}</strong>
+                </>
+              )}
+            </div>
             <button className="primary-button full" disabled={item.kind === "custom" && amount < minimumAmount} onClick={() => onAdd(item, amount)}>
-              {item.kind === "time" ? "Add to my plan" : "Add to basket"}
+              {item.actionLabel ?? (item.kind === "time" ? "Add to my plan" : "Add to basket")}
             </button>
             {item.kind === "custom" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)} for this demo.</p>}
           </aside>

@@ -65,6 +65,16 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
 
+  it("features The TI Annual Gala first with its date and ticket price", () => {
+    const { container } = render(<App />);
+    const cards = [...container.querySelectorAll<HTMLElement>(".package-card")];
+
+    expect(within(cards[0]).getByRole("heading", { name: "The TI Annual Gala" })).toBeInTheDocument();
+    expect(within(cards[0]).getByText("Featured")).toBeInTheDocument();
+    expect(within(cards[0]).getByText("1 Dec 2027")).toBeInTheDocument();
+    expect(within(cards[0]).getByText("Ksh 3,000")).toBeInTheDocument();
+  });
+
   it("renders official institution and county logos in the reach strip", () => {
     const { container } = render(<App />);
     const logos = [...container.querySelectorAll<HTMLImageElement>(".reach-logo")];
@@ -162,6 +172,23 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "Stock a Family Unit food shelf", level: 1 })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
     expect(screen.getAllByText("Ksh 1,800")).toHaveLength(2);
+  });
+
+  it("opens The TI Annual Gala as a dated per-person listing", async () => {
+    window.history.replaceState({}, "", "/listing/ti-annual-gala");
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "The TI Annual Gala", level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
+    expect(screen.getAllByText("1 December 2027")).toHaveLength(2);
+    expect(screen.getAllByText("Ksh 3,000")).toHaveLength(2);
+
+    await user.click(screen.getByRole("button", { name: "Reserve a seat" }));
+
+    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    expect(within(basketDialog).getByText("The TI Annual Gala")).toBeInTheDocument();
+    expect(within(basketDialog).getAllByText(/3,000/).length).toBeGreaterThan(0);
   });
 
   it("adds a fixed-price package from its detail page", async () => {
