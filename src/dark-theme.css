@@ -39,34 +39,32 @@
   .brand-logo { width: 166px; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    color: #f5f6fa;
-    background: #101219;
-    --page-background: #101219;
-    --surface-raised: #191c25;
-    --surface-subtle: #20242f;
-    --text-primary: #f5f6fa;
-    --text-secondary: #adb3c1;
-    --border-primary: #3a3f4d;
-    --border-subtle: #2b303c;
-    --focus-ring: #ff78ad;
-    --brand: #aeb8ff;
-    --brand-hover: #c4cbff;
-    --brand-soft: #252a45;
-    --accent: #ff78ad;
-    --accent-hover: #ff91ba;
-    --accent-soft: #48243a;
-    --accent-on-dark: #ff91ba;
-    --ink: var(--text-primary);
-    --muted: var(--text-secondary);
-    --line: var(--border-primary);
-    --soft-line: var(--border-subtle);
-    --surface: var(--surface-subtle);
-    --paper: var(--surface-raised);
-    --shadow: 0 14px 42px rgba(0, 0, 0, .42);
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: #f5f6fa;
+  background: #101219;
+  --page-background: #101219;
+  --surface-raised: #191c25;
+  --surface-subtle: #20242f;
+  --text-primary: #f5f6fa;
+  --text-secondary: #adb3c1;
+  --border-primary: #3a3f4d;
+  --border-subtle: #2b303c;
+  --focus-ring: #ff78ad;
+  --brand: #aeb8ff;
+  --brand-hover: #c4cbff;
+  --brand-soft: #252a45;
+  --accent: #ff78ad;
+  --accent-hover: #ff91ba;
+  --accent-soft: #48243a;
+  --accent-on-dark: #ff91ba;
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --line: var(--border-primary);
+  --soft-line: var(--border-subtle);
+  --surface: var(--surface-subtle);
+  --paper: var(--surface-raised);
+  --shadow: 0 14px 42px rgba(0, 0, 0, .42);
 
   body,
   .app-shell,

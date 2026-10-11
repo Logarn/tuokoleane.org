@@ -109,6 +109,33 @@ img { display: block; max-width: 100%; }
 .nav-destination-image img { width: 100%; height: 100%; object-fit: cover; }
 
 .header-actions { display: flex; justify-self: end; align-items: center; gap: 8px; }
+.theme-control {
+  position: relative;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.theme-control > svg { flex: 0 0 auto; pointer-events: none; }
+.theme-control select {
+  min-width: 58px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+}
+.theme-control:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.theme-control-menu { display: none; }
 .basket-button {
   position: relative;
   min-height: 44px;
@@ -674,6 +701,9 @@ img { display: block; max-width: 100%; }
   .header-main { min-height: 70px; grid-template-columns: 1fr auto; }
   .brand { width: 166px; }
   .desktop-nav { display: none; }
+  .theme-control-header { display: none; }
+  .theme-control-menu { width: 100%; display: flex; justify-content: flex-start; padding-inline: 15px; border-radius: 12px; }
+  .theme-control-menu select { width: 100%; }
   .discovery-bar { display: none; }
   .mobile-nav { top: calc(100% + 1px); right: 18px; }
   .home-hero { min-height: calc(100svh - 70px); }

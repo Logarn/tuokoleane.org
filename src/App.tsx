@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   CircleCheck,
   Clock3,
@@ -12,11 +13,14 @@ import {
   Images,
   Menu,
   Minus,
+  Monitor,
+  Moon,
   Plus,
   Search,
   Share2,
   ShieldCheck,
   ShoppingBag,
+  Sun,
   Ticket,
   Users,
   X,
@@ -35,6 +39,7 @@ import { BrandLogo } from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
 import MobileCatalogue from "./MobileCatalogue";
 import MobilePrograms from "./MobilePrograms";
+import { ThemeProvider, useTheme, type ThemePreference } from "./Theme";
 
 interface BasketItem {
   packageId: string;
@@ -236,7 +241,7 @@ function readBasket(): BasketItem[] {
   }
 }
 
-function App() {
+function AppContent() {
   const [path, setPath] = useState(() => window.location.pathname);
   const [basket, setBasket] = useState<BasketItem[]>(readBasket);
   const [basketOpen, setBasketOpen] = useState(false);
@@ -442,6 +447,14 @@ function App() {
   );
 }
 
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
+
 interface HeaderProps {
   basketCount: number;
   currentPath: string;
@@ -466,6 +479,28 @@ const headerDestinations = [
   { label: "Gallery", path: "/gallery", image: "/images/ti-gallery/ti-gallery-75.jpg" },
   { label: "How it works", path: "/", hash: "how-it-works", image: "/images/listings/mentor/02.jpg" },
 ];
+
+function ThemeControl({ placement }: { placement: "header" | "menu" }) {
+  const { preference, setPreference } = useTheme();
+  const ThemeIcon = preference === "light" ? Sun : preference === "dark" ? Moon : Monitor;
+
+  return (
+    <label className={`theme-control theme-control-${placement}`}>
+      <ThemeIcon aria-hidden="true" size={17} />
+      <span className="sr-only">Colour theme</span>
+      <select
+        aria-label="Colour theme"
+        value={preference}
+        onChange={(event) => setPreference(event.target.value as ThemePreference)}
+      >
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+      <ChevronDown aria-hidden="true" size={15} />
+    </label>
+  );
+}
 
 function Header({ basketCount, currentPath, expanded, menuOpen, onBasket, onMenu, onNavigate }: HeaderProps) {
   const routeLink = (event: React.MouseEvent<HTMLAnchorElement>, path: string, hash?: string) => {
@@ -499,6 +534,7 @@ function Header({ basketCount, currentPath, expanded, menuOpen, onBasket, onMenu
           })}
         </nav>
         <div className="header-actions">
+          <ThemeControl placement="header" />
           <button className="basket-button" onClick={onBasket} aria-label={`Open your basket with ${basketCount} items`}>
             <ShoppingBag size={18} />
             <span>Basket</span>
@@ -536,6 +572,7 @@ function Header({ basketCount, currentPath, expanded, menuOpen, onBasket, onMenu
               <span>{destination.label}</span>
             </a>
           ))}
+          <ThemeControl placement="menu" />
         </nav>
       )}
     </header>

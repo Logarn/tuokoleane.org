@@ -1,4 +1,5 @@
 import type { ImgHTMLAttributes } from "react";
+import { useTheme } from "./Theme";
 
 type BrandLogoVariant = "wordmark" | "symbol";
 type BrandLogoAppearance = "adaptive" | "light" | "dark" | "white";
@@ -39,12 +40,12 @@ export function BrandLogo({
   decoding = "async",
   ...imageProps
 }: BrandLogoProps) {
+  const { resolvedTheme } = useTheme();
   const asset = brandAssets[variant];
-  const source = appearance === "adaptive" ? asset.light : asset[appearance];
+  const source = appearance === "adaptive" ? asset[resolvedTheme] : asset[appearance];
 
   return (
     <picture className={className}>
-      {appearance === "adaptive" && <source media="(prefers-color-scheme: dark)" srcSet={asset.dark} />}
       <img
         {...imageProps}
         src={source}

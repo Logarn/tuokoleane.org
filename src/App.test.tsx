@@ -1,11 +1,39 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
+function installSystemTheme(initialTheme: "light" | "dark") {
+  let dark = initialTheme === "dark";
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const mediaQuery = {
+    get matches() {
+      return dark;
+    },
+    media: "(prefers-color-scheme: dark)",
+    onchange: null,
+    addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener),
+  } as unknown as MediaQueryList;
+
+  vi.stubGlobal("matchMedia", vi.fn(() => mediaQuery));
+
+  return {
+    setTheme(theme: "light" | "dark") {
+      dark = theme === "dark";
+      act(() => {
+        listeners.forEach((listener) => listener({ matches: dark } as MediaQueryListEvent));
+      });
+    },
+  };
+}
+
 describe("Tuokoleane kindness marketplace", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-theme-preference");
+    document.documentElement.style.removeProperty("color-scheme");
     window.history.replaceState({}, "", "/");
     vi.stubGlobal("scrollTo", vi.fn());
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
@@ -17,6 +45,7 @@ describe("Tuokoleane kindness marketplace", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("leads with the kindness marketplace proposition", () => {
@@ -52,6 +81,55 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(container.querySelectorAll(".nav-destination-image img")).toHaveLength(4);
     expect(within(discoveryNavigation).getByRole("link", { name: /What can I do/ })).toBeInTheDocument();
     expect(within(discoveryNavigation).getByRole("link", { name: "Browse all ways to help" })).toBeInTheDocument();
+  });
+
+  it("supports system, light and dark themes with a persistent manual override", async () => {
+    const systemTheme = installSystemTheme("dark");
+    const user = userEvent.setup();
+    const { container, unmount } = render(<App />);
+    const selector = screen.getByRole("combobox", { name: "Colour theme" });
+
+    expect(selector).toHaveValue("light");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(document.documentElement).toHaveAttribute("data-theme-preference", "light");
+    expect(container.querySelector(".brand-logo img")).toHaveAttribute("src", "/images/brand/tuokoleane-wordmark-blue.png");
+
+    await user.selectOptions(selector, "system");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(window.localStorage.getItem("ti-theme-preference-v1")).toBe("system");
+    expect(container.querySelector(".brand-logo img")).toHaveAttribute("src", "/images/brand/tuokoleane-wordmark-dark.png");
+
+    systemTheme.setTheme("light");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+
+    await user.selectOptions(selector, "light");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(window.localStorage.getItem("ti-theme-preference-v1")).toBe("light");
+    expect(container.querySelector(".brand-logo img")).toHaveAttribute("src", "/images/brand/tuokoleane-wordmark-blue.png");
+
+    systemTheme.setTheme("dark");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+
+    await user.selectOptions(selector, "dark");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(window.localStorage.getItem("ti-theme-preference-v1")).toBe("dark");
+
+    unmount();
+    const persistedView = render(<App />);
+    expect(screen.getByRole("combobox", { name: "Colour theme" })).toHaveValue("dark");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Colour theme" }), "system");
+    expect(window.localStorage.getItem("ti-theme-preference-v1")).toBe("system");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    systemTheme.setTheme("light");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+
+    persistedView.unmount();
+    render(<App />);
+    expect(screen.getByRole("combobox", { name: "Colour theme" })).toHaveValue("system");
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
   it("filters the catalogue by category", async () => {
@@ -151,7 +229,7 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(container.querySelector(".footer-social-links")?.textContent).toBe("");
     expect(screen.queryByText("@Tuokoleane_Initiative")).not.toBeInTheDocument();
     expect(container.querySelector(".footer-symbol img")).toHaveAttribute("src", "/images/brand/tuokoleane-symbol-blue.png");
-    expect(container.querySelector('.footer-symbol source[media="(prefers-color-scheme: dark)"]')).toHaveAttribute("srcset", "/images/brand/tuokoleane-symbol-dark.png");
+    expect(container.querySelector(".footer-symbol source")).not.toBeInTheDocument();
   });
 
   it("shows supported donation methods with the HD M-PESA mark", () => {
