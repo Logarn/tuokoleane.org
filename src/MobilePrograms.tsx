@@ -28,16 +28,16 @@ export default function MobilePrograms({ programs, onNavigate }: MobileProgramsP
   if (!programs.length) return null;
 
   return (
-    <section className="mobile-programs" aria-label="Tuokoleane programs and events" aria-roledescription="carousel">
+    <section className="mobile-programs" aria-label="Tuokoleane programmes and events" aria-roledescription="carousel">
       <p className="mobile-catalogue-sr-only" aria-live="polite" aria-atomic="true">
-        Program {activeIndex + 1} of {programs.length}. Showing {programs[activeIndex].name}.
+        Programme {activeIndex + 1} of {programs.length}. Showing {programs[activeIndex].name}.
       </p>
       <div
         id={viewportId}
         ref={viewportRef}
         className="mobile-programs-viewport"
         role="group"
-        aria-label="Programs and events"
+        aria-label="Programmes and events"
         tabIndex={0}
         onKeyDown={(event) => {
           if (event.key === "ArrowLeft") {
@@ -58,7 +58,7 @@ export default function MobilePrograms({ programs, onNavigate }: MobileProgramsP
         {programs.map((program, index) => {
           const path = `/program/${program.id}`;
           return (
-            <article className={`mobile-program-card${program.featured ? " mobile-program-card-featured" : ""}`} aria-label={`${program.name}, program ${index + 1} of ${programs.length}`} key={program.id}>
+            <article className={`mobile-program-card${program.featured ? " mobile-program-card-featured" : ""}`} aria-label={`${program.name}, programme ${index + 1} of ${programs.length}`} key={program.id}>
               <a href={path} onClick={(event) => { event.preventDefault(); onNavigate(path); }}>
                 <span className="mobile-program-image">
                   <img src={program.image} alt={program.imageAlt} loading="lazy" decoding="async" />
@@ -69,7 +69,7 @@ export default function MobilePrograms({ programs, onNavigate }: MobileProgramsP
                   <strong>{program.name}</strong>
                   {program.eventDate && <time dateTime={program.eventDateIso}><CalendarDays size={14} /> {program.eventDateShort ?? program.eventDate}</time>}
                   <span>{program.summary}</span>
-                  <em>Explore <ChevronRight size={17} /></em>
+                  <em>Learn more <ChevronRight size={17} /></em>
                 </span>
               </a>
             </article>
@@ -79,8 +79,8 @@ export default function MobilePrograms({ programs, onNavigate }: MobileProgramsP
       <div className="mobile-catalogue-controls">
         <span aria-hidden="true">{activeIndex + 1} of {programs.length}</span>
         <div>
-          <button type="button" aria-label="Previous program" aria-controls={viewportId} disabled={activeIndex === 0} onClick={() => moveTo(activeIndex - 1)}><ChevronLeft aria-hidden="true" size={19} /></button>
-          <button type="button" aria-label="Next program" aria-controls={viewportId} disabled={activeIndex === lastIndex} onClick={() => moveTo(activeIndex + 1)}><ChevronRight aria-hidden="true" size={19} /></button>
+          <button type="button" aria-label="Previous programme" aria-controls={viewportId} disabled={activeIndex === 0} onClick={() => moveTo(activeIndex - 1)}><ChevronLeft aria-hidden="true" size={19} /></button>
+          <button type="button" aria-label="Next programme" aria-controls={viewportId} disabled={activeIndex === lastIndex} onClick={() => moveTo(activeIndex + 1)}><ChevronRight aria-hidden="true" size={19} /></button>
         </div>
       </div>
     </section>

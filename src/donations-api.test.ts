@@ -79,7 +79,7 @@ describe("donation notification function", () => {
     }));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({ error: "Add the M-PESA phone number and confirmation code." });
+    await expect(response.json()).resolves.toEqual({ error: "Add the phone number used for M-PESA and the confirmation code." });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

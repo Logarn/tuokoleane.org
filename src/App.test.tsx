@@ -60,7 +60,7 @@ describe("Tuokoleane kindness marketplace", () => {
 
     await user.click(screen.getByRole("button", { name: "Education" }));
 
-    expect(screen.getByRole("heading", { name: "Sponsor school supplies" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Buy school supplies" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Support school fees" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Buy a meal" })).not.toBeInTheDocument();
   });
@@ -69,13 +69,13 @@ describe("Tuokoleane kindness marketplace", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const search = screen.getByRole("combobox", { name: "Search kindness packages" });
+    const search = screen.getByRole("combobox", { name: "Search ways to help" });
     await user.click(search);
     await user.type(search, "school");
 
     const results = screen.getByRole("listbox", { name: "Listing search results" });
     expect(within(results).getAllByRole("option").length).toBeGreaterThan(2);
-    expect(within(results).getByRole("option", { name: /Sponsor school supplies/ })).toBeInTheDocument();
+    expect(within(results).getByRole("option", { name: /Buy school supplies/ })).toBeInTheDocument();
     expect(within(results).getByRole("option", { name: /Support school fees/ })).toBeInTheDocument();
     expect(within(results).getByRole("option", { name: /Buy a pair of school shoes/ })).toBeInTheDocument();
 
@@ -89,7 +89,7 @@ describe("Tuokoleane kindness marketplace", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const search = screen.getByRole("combobox", { name: "Search kindness packages" });
+    const search = screen.getByRole("combobox", { name: "Search ways to help" });
     await user.click(search);
     await user.type(search, "plant a tree");
     await user.keyboard("{ArrowDown}{Enter}");
@@ -104,8 +104,9 @@ describe("Tuokoleane kindness marketplace", () => {
     const marketplace = container.querySelector<HTMLElement>("#marketplace")!;
 
     expect(within(marketplace).queryByRole("heading", { name: "The TI Annual Gala" })).not.toBeInTheDocument();
-    await user.type(screen.getByRole("combobox", { name: "Search kindness packages" }), "TI Annual Gala");
-    expect(screen.getByText("No listings match “TI Annual Gala”.")).toBeInTheDocument();
+    await user.type(screen.getByRole("combobox", { name: "Search ways to help" }), "TI Annual Gala");
+    expect(screen.getByRole("heading", { name: "Nothing here yet" })).toBeInTheDocument();
+    expect(screen.getByText("Try another search or choose a different category.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Explore The TI Annual Gala" })).toHaveAttribute("href", "/program/ti-annual-gala");
   });
 
@@ -246,7 +247,7 @@ describe("Tuokoleane kindness marketplace", () => {
 
     expect(window.location.pathname).toBe("/listing/meal");
     expect(screen.getByRole("heading", { name: "Buy a meal", level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "About this act of kindness" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What you are helping with" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show all photos" })).toBeInTheDocument();
     expect(screen.queryByText("No payment, placement or beneficiary match is created.")).not.toBeInTheDocument();
   });
@@ -270,7 +271,7 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "Moments from Annual Sharing Day." })).toBeInTheDocument();
     expect(screen.getAllByRole("img", { name: /Annual Sharing Day/ }).length).toBeGreaterThanOrEqual(4);
     expect(screen.getByRole("link", { name: "Ask about attending" })).toHaveAttribute("href", "mailto:tuokoleaneinitiative@gmail.com?subject=Annual%20Sharing%20Day%20attendance%20enquiry");
-    expect(screen.getByText(/Sending an enquiry does not reserve a place/)).toBeInTheDocument();
+    expect(screen.getByText(/An email enquiry does not reserve a place/)).toBeInTheDocument();
   });
 
   it("offers a flexible donation from the current KSh 500 minimum", () => {
@@ -279,7 +280,7 @@ describe("Tuokoleane kindness marketplace", () => {
 
     expect(screen.getByRole("heading", { name: "Donate any amount", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" })).toHaveValue("1000");
-    expect(screen.getByText("The current V1 minimum is KSh 500.")).toBeInTheDocument();
+    expect(screen.getByText("The minimum contribution is KSh 500.")).toBeInTheDocument();
   });
 
   it("renders a new cause listing on a direct route", () => {
@@ -296,7 +297,7 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Buy a pair of school shoes", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/Official Bata Kenya product photography/)).toBeInTheDocument();
+    expect(screen.getByText(/official Bata Kenya product photos/)).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Open photo/ })).toHaveLength(4);
     expect(screen.getAllByText("Ksh 2,000")).toHaveLength(2);
   });
@@ -320,7 +321,7 @@ describe("Tuokoleane kindness marketplace", () => {
 
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
 
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    const basketDialog = screen.getByRole("dialog", { name: "Your basket" });
     expect(within(basketDialog).getByText("Buy a meal")).toBeInTheDocument();
     expect(within(basketDialog).getAllByText(/500/).length).toBeGreaterThan(0);
   });
@@ -331,13 +332,13 @@ describe("Tuokoleane kindness marketplace", () => {
     const { container } = render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+    await user.click(within(screen.getByRole("dialog", { name: "Your basket" }))
       .getByRole("button", { name: "Close basket" }));
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
 
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    const basketDialog = screen.getByRole("dialog", { name: "Your basket" });
     expect(container.querySelectorAll(".basket-item")).toHaveLength(1);
-    expect(screen.getByRole("button", { name: "Open kindness basket with 2 items" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open your basket with 2 items" })).toBeInTheDocument();
     expect(within(basketDialog).getByText(/1,000/)).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
       { packageId: "meal", quantity: 2, amount: 500 },
@@ -359,13 +360,13 @@ describe("Tuokoleane kindness marketplace", () => {
     await user.clear(amount);
     await user.type(amount, "700");
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+    await user.click(within(screen.getByRole("dialog", { name: "Your basket" }))
       .getByRole("button", { name: "Close basket" }));
     await user.clear(amount);
     await user.type(amount, "900");
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
 
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    const basketDialog = screen.getByRole("dialog", { name: "Your basket" });
     expect(container.querySelectorAll(".basket-item")).toHaveLength(2);
     expect(within(basketDialog).getByText(/1,600/)).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
@@ -381,9 +382,9 @@ describe("Tuokoleane kindness marketplace", () => {
 
     await user.click(screen.getByRole("button", { name: "Add to my plan" }));
 
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    const basketDialog = screen.getByRole("dialog", { name: "Your basket" });
     expect(within(basketDialog).getByText("Listen to someone")).toBeInTheDocument();
-    expect(within(basketDialog).getByText("Session based")).toBeInTheDocument();
+    expect(within(basketDialog).getByText("One guided session")).toBeInTheDocument();
     expect(within(basketDialog).getByText(/Ksh\s*0/)).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
       { packageId: "listen", quantity: 1, amount: 0 },
@@ -397,9 +398,9 @@ describe("Tuokoleane kindness marketplace", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole("button", { name: "Open kindness basket with 2 items" }));
+    await user.click(screen.getByRole("button", { name: "Open your basket with 2 items" }));
 
-    const basketDialog = screen.getByRole("dialog", { name: "Kindness basket" });
+    const basketDialog = screen.getByRole("dialog", { name: "Your basket" });
     expect(within(basketDialog).getByText("Buy a meal")).toBeInTheDocument();
     expect(within(basketDialog).getByText(/1,000/)).toBeInTheDocument();
   });
@@ -428,10 +429,10 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
-      .getByRole("button", { name: "Continue to payment details" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Your basket" }))
+      .getByRole("button", { name: "Continue to payment" }));
 
-    const checkout = screen.getByRole("dialog", { name: "Send your donation details to TI." });
+    const checkout = screen.getByRole("dialog", { name: "Tell TI about your payment." });
     expect(within(checkout).getByText("9911113")).toBeInTheDocument();
     expect(within(checkout).getByText("TUOKOLEANE INITIATIVE CBO")).toBeInTheDocument();
     await user.type(within(checkout).getByRole("textbox", { name: "Name *" }), "Amina Donor");
@@ -439,10 +440,10 @@ describe("Tuokoleane kindness marketplace", () => {
     await user.type(within(checkout).getByRole("textbox", { name: "Phone used for M-PESA *" }), "0740123456");
     await user.type(within(checkout).getByRole("textbox", { name: "M-PESA confirmation code *" }), "TAA1B2C3D4");
     await user.type(within(checkout).getByRole("textbox", { name: "A note for the team Optional" }), "Please use this for the next family meal.");
-    await user.click(within(checkout).getByRole("button", { name: "Send donation details" }));
+    await user.click(within(checkout).getByRole("button", { name: "Send payment details" }));
 
     const confirmation = await screen.findByRole("dialog", { name: "Thank you for choosing to help." });
-    expect(within(confirmation).getByText("Donation details sent")).toBeInTheDocument();
+    expect(within(confirmation).getByText("Your details reached TI")).toBeInTheDocument();
     expect(within(confirmation).getByText(/TI will match M-PESA code TAA1B2C3D4/)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -473,14 +474,14 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add to basket" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
-      .getByRole("button", { name: "Continue to payment details" }));
-    const checkout = screen.getByRole("dialog", { name: "Send your donation details to TI." });
+    await user.click(within(screen.getByRole("dialog", { name: "Your basket" }))
+      .getByRole("button", { name: "Continue to payment" }));
+    const checkout = screen.getByRole("dialog", { name: "Tell TI about your payment." });
     await user.type(within(checkout).getByRole("textbox", { name: "Name *" }), "Amina Donor");
     await user.type(within(checkout).getByRole("textbox", { name: "Email *" }), "amina@example.com");
     await user.type(within(checkout).getByRole("textbox", { name: "Phone used for M-PESA *" }), "0740123456");
     await user.type(within(checkout).getByRole("textbox", { name: "M-PESA confirmation code *" }), "TAA1B2C3D4");
-    await user.click(within(checkout).getByRole("button", { name: "Send donation details" }));
+    await user.click(within(checkout).getByRole("button", { name: "Send payment details" }));
 
     expect(await within(checkout).findByRole("alert")).toHaveTextContent("We could not notify the TI team. Please try again.");
     expect(screen.queryByRole("dialog", { name: "Thank you for choosing to help." })).not.toBeInTheDocument();
@@ -500,7 +501,7 @@ describe("Tuokoleane kindness marketplace", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Add to my plan" }));
-    await user.click(within(screen.getByRole("dialog", { name: "Kindness basket" }))
+    await user.click(within(screen.getByRole("dialog", { name: "Your basket" }))
       .getByRole("button", { name: "Share my interest" }));
     const checkout = screen.getByRole("dialog", { name: "Tell TI how to reach you." });
     expect(within(checkout).queryByRole("textbox", { name: /M-PESA confirmation code/ })).not.toBeInTheDocument();
@@ -509,7 +510,7 @@ describe("Tuokoleane kindness marketplace", () => {
     await user.click(within(checkout).getByRole("button", { name: "Send my interest" }));
 
     const confirmation = await screen.findByRole("dialog", { name: "Thank you for choosing to help." });
-    expect(within(confirmation).getByText("Your interest was sent")).toBeInTheDocument();
+    expect(within(confirmation).getByText("Your interest reached TI")).toBeInTheDocument();
     const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(String(request.body));
     expect(body.mpesaReference).toBe("");

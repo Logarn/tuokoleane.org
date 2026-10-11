@@ -66,7 +66,7 @@ function isShortString(value: unknown, maximumLength: number): value is string {
 
 export function validateDonationSubmission(value: unknown): DonationValidationResult {
   if (!isRecord(value) || !isRecord(value.donor) || !Array.isArray(value.items)) {
-    return { ok: false, error: "The donation details are incomplete." };
+    return { ok: false, error: "Some donation details are missing. Please check the form and try again." };
   }
 
   const { donor } = value;
@@ -81,15 +81,15 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
     || !isShortString(value.mpesaReference, 40)
     || !isShortString(value.website, 200)
   ) {
-    return { ok: false, error: "The donation details contain an invalid value." };
+    return { ok: false, error: "One of the donation details does not look right. Please check the form and try again." };
   }
 
   if (!isValidEmail(donor.email) || (!donor.anonymous && !donor.name.trim())) {
-    return { ok: false, error: "Add a valid email and donor name." };
+    return { ok: false, error: "Add a valid email. Then add your name or choose to give anonymously." };
   }
 
   if (value.items.length === 0 || value.items.length > 20) {
-    return { ok: false, error: "Add at least one valid item to the donation." };
+    return { ok: false, error: "Your basket does not contain a valid item." };
   }
 
   const items: DonationItem[] = [];
@@ -108,7 +108,7 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
       || Number(item.unitAmount) < 0
       || Number(item.unitAmount) > 1_000_000
     ) {
-      return { ok: false, error: "One or more donation items are invalid." };
+      return { ok: false, error: "One item in your basket could not be sent. Please remove it and try again." };
     }
 
     items.push({
@@ -122,11 +122,11 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
 
   const total = donationTotal(items);
   if (total > 5_000_000) {
-    return { ok: false, error: "The donation total is above the online submission limit." };
+    return { ok: false, error: "This donation is above the online limit. Please contact TI before paying." };
   }
 
   if (total > 0 && (!isValidPhone(donor.phone) || !isValidMpesaReference(value.mpesaReference))) {
-    return { ok: false, error: "Add the M-PESA phone number and confirmation code." };
+    return { ok: false, error: "Add the phone number used for M-PESA and the confirmation code." };
   }
 
   return {

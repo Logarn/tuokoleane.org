@@ -66,19 +66,19 @@ function buildNotificationText(
 
 async function handleDonation(request: Request) {
   if (!requestComesFromSameOrigin(request)) {
-    return json({ error: "This donation request could not be accepted." }, 403);
+    return json({ error: "We could not accept these details. Please return to the TI website and try again." }, 403);
   }
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 30_000) {
-    return json({ error: "The donation request is too large." }, 413);
+    return json({ error: "There is too much information in this form. Please shorten your note and try again." }, 413);
   }
 
   let payload: unknown;
   try {
     payload = await request.json();
   } catch {
-    return json({ error: "The donation details could not be read." }, 400);
+    return json({ error: "We could not read your donation details. Please check the form and try again." }, 400);
   }
 
   const validation = validateDonationSubmission(payload);
@@ -124,7 +124,7 @@ async function handleDonation(request: Request) {
     });
   } catch (error) {
     console.error("Donation notification request failed.", error);
-    return json({ error: "We could not reach the TI team. Please try again." }, 502);
+    return json({ error: "Your details did not reach the TI team. Please try again." }, 502);
   }
 
   if (!emailResponse.ok) {
@@ -132,7 +132,7 @@ async function handleDonation(request: Request) {
       status: emailResponse.status,
       requestId: emailResponse.headers.get("x-request-id"),
     });
-    return json({ error: "We could not notify the TI team. Please try again." }, 502);
+    return json({ error: "Your details did not reach the TI team. Please try again." }, 502);
   }
 
   return json({ reference: submission.reference }, 201);

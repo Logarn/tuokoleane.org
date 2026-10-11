@@ -217,9 +217,9 @@
 
   .mobile-package-image small {
     position: absolute;
-    top: 12px;
+    bottom: 12px;
     left: 12px;
-    max-width: calc(100% - 48px);
+    max-width: calc(100% - 24px);
     overflow: hidden;
     padding: 3px 8px;
     border: 1px solid rgba(255, 255, 255, .8);

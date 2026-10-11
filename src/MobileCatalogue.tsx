@@ -50,15 +50,15 @@ export default function MobileCatalogue({ items, onNavigate }: MobileCataloguePr
   if (!items.length) return null;
 
   return (
-    <section className="mobile-catalogue" aria-label="Kindness listings" aria-roledescription="carousel">
+    <section className="mobile-catalogue" aria-label="Ways to help" aria-roledescription="carousel">
       <p className="mobile-catalogue-sr-only" aria-live="polite" aria-atomic="true">
-        Showing listings {firstVisibleItem} to {lastVisibleItem} of {items.length}.
+        Showing ways to help {firstVisibleItem} to {lastVisibleItem} of {items.length}.
       </p>
 
       <div className="mobile-catalogue-controls">
         <button
           type="button"
-          aria-label="Previous listings"
+          aria-label="Previous ways to help"
           aria-controls={viewportId}
           disabled={activeColumnIndex === 0}
           onClick={() => moveToColumn(activeColumnIndex - VISIBLE_COLUMNS)}
@@ -67,7 +67,7 @@ export default function MobileCatalogue({ items, onNavigate }: MobileCataloguePr
         </button>
         <button
           type="button"
-          aria-label="Next listings"
+          aria-label="Next ways to help"
           aria-controls={viewportId}
           disabled={activeColumnIndex === finalColumnIndex}
           onClick={() => moveToColumn(activeColumnIndex + VISIBLE_COLUMNS)}
@@ -80,7 +80,7 @@ export default function MobileCatalogue({ items, onNavigate }: MobileCataloguePr
         id={viewportId}
         ref={viewportRef}
         className="mobile-catalogue-viewport"
-        aria-label="Swipe through kindness listings"
+        aria-label="Swipe through ways to help"
         tabIndex={0}
         onKeyDown={(event) => {
           if (event.key === "ArrowLeft") {

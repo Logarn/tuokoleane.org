@@ -34,7 +34,7 @@ function makeItem(index: number): KindnessPackage {
 describe("MobileCatalogue", () => {
   it("renders one three-row catalogue rail without compact-card descriptions", () => {
     const { container } = render(<MobileCatalogue items={Array.from({ length: 7 }, (_, index) => makeItem(index + 1))} onNavigate={vi.fn()} />);
-    const rail = screen.getByRole("list", { name: "Swipe through kindness listings" });
+    const rail = screen.getByRole("list", { name: "Swipe through ways to help" });
 
     expect(within(rail).getAllByRole("listitem")).toHaveLength(7);
     expect(container.querySelector(".mobile-catalogue-page")).not.toBeInTheDocument();
@@ -45,37 +45,37 @@ describe("MobileCatalogue", () => {
     const user = userEvent.setup();
     render(<MobileCatalogue items={Array.from({ length: 13 }, (_, index) => makeItem(index + 1))} onNavigate={vi.fn()} />);
 
-    const previous = screen.getByRole("button", { name: "Previous listings" });
-    const next = screen.getByRole("button", { name: "Next listings" });
+    const previous = screen.getByRole("button", { name: "Previous ways to help" });
+    const next = screen.getByRole("button", { name: "Next ways to help" });
 
     expect(previous).toBeDisabled();
     expect(next).toBeEnabled();
-    expect(screen.getByText("Showing listings 1 to 6 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 1 to 6 of 13.")).toBeInTheDocument();
 
     await user.click(next);
     expect(previous).toBeEnabled();
-    expect(screen.getByText("Showing listings 7 to 12 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 7 to 12 of 13.")).toBeInTheDocument();
 
     await user.click(next);
     expect(next).toBeDisabled();
-    expect(screen.getByText("Showing listings 10 to 13 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 10 to 13 of 13.")).toBeInTheDocument();
 
     await user.click(previous);
-    expect(screen.getByText("Showing listings 4 to 9 of 13.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 4 to 9 of 13.")).toBeInTheDocument();
   });
 
   it("resets to the first columns when the item set changes", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<MobileCatalogue items={Array.from({ length: 13 }, (_, index) => makeItem(index + 1))} onNavigate={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "Next listings" }));
-    expect(screen.getByText("Showing listings 7 to 12 of 13.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Next ways to help" }));
+    expect(screen.getByText("Showing ways to help 7 to 12 of 13.")).toBeInTheDocument();
 
     rerender(<MobileCatalogue items={[makeItem(4), makeItem(5)]} onNavigate={vi.fn()} />);
 
-    expect(screen.getByText("Showing listings 1 to 2 of 2.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Previous listings" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Next listings" })).toBeDisabled();
+    expect(screen.getByText("Showing ways to help 1 to 2 of 2.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous ways to help" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next ways to help" })).toBeDisabled();
   });
 
   it("provides labelled controls, rail announcements and navigable listing links", async () => {
@@ -83,15 +83,15 @@ describe("MobileCatalogue", () => {
     const onNavigate = vi.fn();
     render(<MobileCatalogue items={Array.from({ length: 10 }, (_, index) => makeItem(index + 1))} onNavigate={onNavigate} />);
 
-    expect(screen.getByRole("region", { name: "Kindness listings" })).toHaveAttribute("aria-roledescription", "carousel");
-    expect(screen.getByText("Showing listings 1 to 6 of 10.")).toHaveAttribute("aria-live", "polite");
-    expect(screen.getByRole("button", { name: "Previous listings" })).toHaveAttribute("aria-controls");
-    expect(screen.getByRole("button", { name: "Next listings" })).toHaveAttribute("aria-controls");
+    expect(screen.getByRole("region", { name: "Ways to help" })).toHaveAttribute("aria-roledescription", "carousel");
+    expect(screen.getByText("Showing ways to help 1 to 6 of 10.")).toHaveAttribute("aria-live", "polite");
+    expect(screen.getByRole("button", { name: "Previous ways to help" })).toHaveAttribute("aria-controls");
+    expect(screen.getByRole("button", { name: "Next ways to help" })).toHaveAttribute("aria-controls");
 
-    const viewport = screen.getByRole("list", { name: "Swipe through kindness listings" });
+    const viewport = screen.getByRole("list", { name: "Swipe through ways to help" });
     viewport.focus();
     await user.keyboard("{ArrowRight}");
-    expect(screen.getByText("Showing listings 7 to 10 of 10.")).toBeInTheDocument();
+    expect(screen.getByText("Showing ways to help 7 to 10 of 10.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: "View Kindness item 1, Ksh 500" }));
     expect(onNavigate).toHaveBeenCalledWith("/listing/item-1");

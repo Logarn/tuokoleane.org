@@ -31,18 +31,18 @@ describe("MobilePrograms", () => {
     const onNavigate = vi.fn();
     render(<MobilePrograms programs={[makeProgram(1), makeProgram(2), makeProgram(3)]} onNavigate={onNavigate} />);
 
-    expect(screen.getByRole("region", { name: "Tuokoleane programs and events" })).toHaveAttribute("aria-roledescription", "carousel");
+    expect(screen.getByRole("region", { name: "Tuokoleane programmes and events" })).toHaveAttribute("aria-roledescription", "carousel");
     expect(screen.getByText("1 of 3")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Previous program" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous programme" })).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: "Next program" }));
+    await user.click(screen.getByRole("button", { name: "Next programme" }));
     expect(screen.getByText("2 of 3")).toBeInTheDocument();
 
-    const viewport = screen.getByRole("group", { name: "Programs and events" });
+    const viewport = screen.getByRole("group", { name: "Programmes and events" });
     viewport.focus();
     await user.keyboard("{ArrowRight}");
     expect(screen.getByText("3 of 3")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Next program" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next programme" })).toBeDisabled();
 
     await user.click(screen.getByRole("link", { name: /Program 1/ }));
     expect(onNavigate).toHaveBeenCalledWith("/program/program-1");
