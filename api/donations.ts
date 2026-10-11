@@ -1,7 +1,7 @@
 import {
   TI_PAYMENT_DETAILS,
   validateDonationSubmission,
-} from "../src/donations";
+} from "../src/donations.js";
 
 const kenyaCurrency = new Intl.NumberFormat("en-KE", {
   style: "currency",
