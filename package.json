@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && node scripts/prerender-seo.mjs --prepare && vite build && node scripts/prerender-seo.mjs",
     "preview": "vite preview",
+    "seo:csp": "node scripts/prerender-seo.mjs --print-csp-hashes",
     "test": "vitest run",
+    "test:seo": "bun run build && node scripts/validate-seo.mjs && node scripts/prerender-seo.mjs --validate-only",
     "test:watch": "vitest"
   },
   "dependencies": {

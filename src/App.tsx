@@ -39,6 +39,7 @@ import { BrandLogo } from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
 import MobileCatalogue from "./MobileCatalogue";
 import MobilePrograms from "./MobilePrograms";
+import { applyRouteSeo } from "./seo";
 import { ThemeProvider, useTheme, type ThemePreference } from "./Theme";
 
 interface BasketItem {
@@ -285,16 +286,8 @@ function AppContent() {
   }, [basketOpen, checkoutOpen, confirmation]);
 
   useEffect(() => {
-    document.title = routePackage
-      ? `${routePackage.title} | Tuokoleane Initiative`
-      : routeProgram
-        ? `${routeProgram.name} | Tuokoleane Initiative`
-        : path === "/about"
-          ? "About TI | Tuokoleane Initiative"
-          : path === "/gallery"
-            ? "Gallery | Tuokoleane Initiative"
-            : "Catalogue of Kindness | Tuokoleane Initiative";
-  }, [path, routePackage, routeProgram]);
+    applyRouteSeo(path);
+  }, [path]);
 
   const navigate = (nextPath: string, hash?: string) => {
     const destination = `${nextPath}${hash ? `#${hash}` : ""}`;
@@ -1144,7 +1137,10 @@ function ProgramPage({ program, onNavigate }: { program: Program; onNavigate: (p
   return (
     <main className="program-page" style={{ "--program-accent": program.accent } as React.CSSProperties}>
       <div className="program-page-shell page-width">
-        <button className="back-link" onClick={() => onNavigate("/", "programs")}><ArrowLeft size={18} /> All initiatives</button>
+        <nav aria-label="Breadcrumb">
+          <a className="back-link" href="/#programs" onClick={(event) => { event.preventDefault(); onNavigate("/", "programs"); }}><ArrowLeft size={18} /> All initiatives</a>
+          <span className="sr-only" aria-current="page">{program.name}</span>
+        </nav>
         <section className="program-hero">
           <div className="program-hero-copy">
             <p className="eyebrow">{program.number} · {program.kicker}</p>
@@ -1288,7 +1284,10 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
     <main className="listing-page">
       <div className="listing-shell page-width">
         <div className="listing-topline">
-          <button className="back-link" onClick={() => onNavigate("/", "marketplace")}><ArrowLeft size={18} /> All ways to help</button>
+          <nav aria-label="Breadcrumb">
+            <a className="back-link" href="/#marketplace" onClick={(event) => { event.preventDefault(); onNavigate("/", "marketplace"); }}><ArrowLeft size={18} /> All ways to help</a>
+            <span className="sr-only" aria-current="page">{item.title}</span>
+          </nav>
           <div className="listing-actions">
             <button onClick={share}><Share2 size={17} /> {shareLabel}</button>
             <FavoriteButton className="listing-page-favourite" itemId={item.id} itemTitle={item.title} showText />
