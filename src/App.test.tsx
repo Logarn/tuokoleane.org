@@ -39,6 +39,21 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByText("Browse practical packages. Every one opens into its own page with the details and boundaries upfront.")).not.toBeInTheDocument();
   });
 
+  it("uses an image-led discovery header with clear navigation", () => {
+    const { container } = render(<App />);
+    const primaryNavigation = screen.getByRole("navigation", { name: "Primary navigation" });
+    const discoveryNavigation = screen.getByRole("navigation", { name: "Explore Tuokoleane" });
+
+    expect(within(primaryNavigation).getByRole("link", { name: "Give" })).toHaveAttribute("href", "/#marketplace");
+    expect(within(primaryNavigation).getByRole("link", { name: "About TI" })).toHaveAttribute("href", "/#values");
+    expect(within(primaryNavigation).getByRole("link", { name: "Gallery" })).toHaveAttribute("href", "/#gallery");
+    expect(within(primaryNavigation).getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/#how-it-works");
+    expect(within(primaryNavigation).getAllByRole("link")).toHaveLength(4);
+    expect(container.querySelectorAll(".nav-destination-image img")).toHaveLength(4);
+    expect(within(discoveryNavigation).getByRole("link", { name: /What can I do/ })).toBeInTheDocument();
+    expect(within(discoveryNavigation).getByRole("link", { name: "Browse all ways to help" })).toBeInTheDocument();
+  });
+
   it("filters the catalogue by category", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -101,16 +116,19 @@ describe("Tuokoleane kindness marketplace", () => {
     expect([...container.querySelectorAll<HTMLImageElement>(".ti-gallery-card img")]
       .every((image) => image.getAttribute("loading") === "lazy")).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 58" }));
+    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 56" }));
     const dialog = screen.getByRole("dialog", { name: "Family Experience" });
-    expect(within(dialog).getByText("1 / 58")).toBeInTheDocument();
+    expect(within(dialog).getByText("1 / 56")).toBeInTheDocument();
+    expect(within(dialog).getAllByRole("button", { name: /View photo/ })).toHaveLength(56);
 
     await user.click(within(dialog).getByRole("button", { name: "Next gallery photo" }));
-    expect(within(dialog).getByText("2 / 58")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 / 56")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Close gallery photo" }));
-    await user.click(screen.getByRole("button", { name: "View all 58 photos" }));
-    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(58);
+    await user.click(screen.getByRole("button", { name: /Family Experience.*25/ }));
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(18);
+    await user.click(screen.getByRole("button", { name: "View all 25 photos" }));
+    expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(25);
   });
 
   it("opens each package on its own route", async () => {

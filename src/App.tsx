@@ -157,17 +157,17 @@ const galleryPhotoAltByNumber = new Map([
 ]);
 
 const featuredGalleryPhotoNumbers = [
-  51, 75, 74, 10, 40, 29, 6, 57, 35, 65, 59, 13, 37, 26, 7, 68, 44, 73,
+  51, 75, 74, 10, 40, 29, 6, 57, 35, 65, 59, 13, 37, 26, 7, 68, 44, 12,
 ];
 
-const duplicateGalleryPhotoNumbers = new Set([
-  22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71,
+const excludedGalleryPhotoNumbers = new Set([
+  21, 22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71, 73,
 ]);
 
 const galleryPhotoNumbers = [
   ...featuredGalleryPhotoNumbers,
   ...Array.from({ length: 75 }, (_, index) => index + 1)
-    .filter((photoNumber) => !featuredGalleryPhotoNumbers.includes(photoNumber) && !duplicateGalleryPhotoNumbers.has(photoNumber)),
+    .filter((photoNumber) => !featuredGalleryPhotoNumbers.includes(photoNumber) && !excludedGalleryPhotoNumbers.has(photoNumber)),
 ];
 
 const galleryPhotos: GalleryPhoto[] = galleryPhotoNumbers.map((photoNumber, index) => {
@@ -183,6 +183,9 @@ const galleryPhotos: GalleryPhoto[] = galleryPhotoNumbers.map((photoNumber, inde
     collection,
   };
 });
+
+const galleryCollections = ["All Photos", "Annual Sharing Day", "Family Experience", "TI Moments"] as const;
+type GalleryCollection = (typeof galleryCollections)[number];
 
 function packagePrice(item: KindnessPackage) {
   if (item.kind === "fixed") return currency.format(item.price ?? 0);
@@ -305,6 +308,7 @@ function App() {
     <div className="app-shell">
       <Header
         basketCount={basketCount}
+        expanded={!isListingRoute && !isProgramRoute}
         menuOpen={mobileMenuOpen}
         onBasket={() => setBasketOpen(true)}
         onMenu={() => setMobileMenuOpen((open) => !open)}
@@ -379,6 +383,7 @@ function App() {
 
 interface HeaderProps {
   basketCount: number;
+  expanded: boolean;
   menuOpen: boolean;
   onBasket: () => void;
   onMenu: () => void;
@@ -393,35 +398,76 @@ function Brand({ onNavigate }: { onNavigate: (path: string) => void }) {
   );
 }
 
-function Header({ basketCount, menuOpen, onBasket, onMenu, onNavigate }: HeaderProps) {
+const headerDestinations = [
+  { label: "Give", hash: "marketplace", image: "/images/listings/meal/02.jpg" },
+  { label: "About TI", hash: "values", image: "/images/ti-gallery/ti-gallery-51.jpg" },
+  { label: "Gallery", hash: "gallery", image: "/images/ti-gallery/ti-gallery-75.jpg" },
+  { label: "How it works", hash: "how-it-works", image: "/images/listings/mentor/02.jpg" },
+];
+
+function Header({ basketCount, expanded, menuOpen, onBasket, onMenu, onNavigate }: HeaderProps) {
   const homeLink = (event: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
     event.preventDefault();
     onNavigate("/", hash);
   };
 
   return (
-    <header className="site-header">
-      <Brand onNavigate={onNavigate} />
-      <nav className="desktop-nav" aria-label="Primary navigation">
-        <a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a>
-        <a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a>
-        <a href="/#how-it-works" onClick={(event) => homeLink(event, "how-it-works")}>How it works</a>
-      </nav>
-      <div className="header-actions">
-        <button className="basket-button" onClick={onBasket} aria-label={`Open kindness basket with ${basketCount} items`}>
-          <ShoppingBag size={18} />
-          <span>Basket</span>
-          {basketCount > 0 && <b>{basketCount}</b>}
-        </button>
-        <button className="menu-button" onClick={onMenu} aria-label="Toggle navigation">
-          {menuOpen ? <X /> : <Menu />}
-        </button>
+    <header className={`site-header${expanded ? " site-header-expanded" : ""}`}>
+      <div className="header-main">
+        <Brand onNavigate={onNavigate} />
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          {headerDestinations.map((destination, index) => (
+            <a
+              className={index === 0 ? "nav-destination nav-destination-active" : "nav-destination"}
+              href={`/#${destination.hash}`}
+              key={destination.label}
+              onClick={(event) => homeLink(event, destination.hash)}
+            >
+              <span className="nav-destination-image" aria-hidden="true">
+                <img src={destination.image} alt="" />
+              </span>
+              <span>{destination.label}</span>
+            </a>
+          ))}
+        </nav>
+        <div className="header-actions">
+          <button className="basket-button" onClick={onBasket} aria-label={`Open kindness basket with ${basketCount} items`}>
+            <ShoppingBag size={18} />
+            <span>Basket</span>
+            {basketCount > 0 && <b>{basketCount}</b>}
+          </button>
+          <button className="menu-button" onClick={onMenu} aria-label="Toggle navigation" aria-expanded={menuOpen}>
+            {menuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
+      {expanded && (
+        <nav className="discovery-bar" aria-label="Explore Tuokoleane">
+          <a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>
+            <strong>What can I do?</strong>
+            <span>Browse practical acts</span>
+          </a>
+          <a href="/#how-it-works" onClick={(event) => homeLink(event, "how-it-works")}>
+            <strong>How does it work?</strong>
+            <span>See the path from pledge to action</span>
+          </a>
+          <a href="/#programs" onClick={(event) => homeLink(event, "programs")}>
+            <strong>Who makes it happen?</strong>
+            <span>Meet the TI programs</span>
+          </a>
+          <a className="discovery-search" href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")} aria-label="Browse all ways to help">
+            <Search size={22} strokeWidth={2.4} />
+          </a>
+        </nav>
+      )}
       {menuOpen && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          <a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a>
-          <a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programs</a>
-          <a href="/#how-it-works" onClick={(event) => homeLink(event, "how-it-works")}>How it works</a>
+          {headerDestinations.map((destination) => (
+            <a href={`/#${destination.hash}`} key={destination.label} onClick={(event) => homeLink(event, destination.hash)}>
+              <span className="nav-destination-image" aria-hidden="true"><img src={destination.image} alt="" /></span>
+              <span>{destination.label}</span>
+            </a>
+          ))}
         </nav>
       )}
     </header>
@@ -433,6 +479,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
   const [query, setQuery] = useState("");
   const [selectedIdea, setSelectedIdea] = useState<CampaignIdea | null>(null);
   const [galleryExpanded, setGalleryExpanded] = useState(false);
+  const [activeGalleryCollection, setActiveGalleryCollection] = useState<GalleryCollection>("All Photos");
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -483,7 +530,10 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
     window.requestAnimationFrame(() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" }));
   };
 
-  const visibleGalleryPhotos = galleryExpanded ? galleryPhotos : galleryPhotos.slice(0, 18);
+  const filteredGalleryPhotos = activeGalleryCollection === "All Photos"
+    ? galleryPhotos
+    : galleryPhotos.filter((photo) => photo.collection === activeGalleryCollection);
+  const visibleGalleryPhotos = galleryExpanded ? filteredGalleryPhotos : filteredGalleryPhotos.slice(0, 18);
   const selectedGalleryPhoto = selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex];
 
   const showPreviousGalleryPhoto = () => {
@@ -656,27 +706,51 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
             <p>Moments of welcome, shared time and community from the Tuokoleane Annual Sharing Day, TI Family Experience and other shared TI moments.</p>
           </div>
 
+          <div className="ti-gallery-toolbar" aria-label="Gallery collections">
+            <div className="ti-gallery-tabs" role="group" aria-label="Filter photos by collection">
+              {galleryCollections.map((collection) => {
+                const photoCount = collection === "All Photos"
+                  ? galleryPhotos.length
+                  : galleryPhotos.filter((photo) => photo.collection === collection).length;
+                return (
+                  <button
+                    className={activeGalleryCollection === collection ? "active" : ""}
+                    type="button"
+                    aria-pressed={activeGalleryCollection === collection}
+                    onClick={() => {
+                      setActiveGalleryCollection(collection);
+                      setGalleryExpanded(false);
+                    }}
+                    key={collection}
+                  >
+                    <span>{collection}</span>
+                    <small>{photoCount}</small>
+                  </button>
+                );
+              })}
+            </div>
+            <p>{filteredGalleryPhotos.length} photographs</p>
+          </div>
+
           <div className="ti-gallery-grid" aria-label="Tuokoleane Initiative photographs">
             {visibleGalleryPhotos.map((photo, index) => (
               <button
                 className="ti-gallery-card"
                 key={photo.src}
-                onClick={() => setSelectedGalleryIndex(index)}
+                onClick={() => setSelectedGalleryIndex(galleryPhotos.indexOf(photo))}
                 aria-haspopup="dialog"
-                aria-label={`Open gallery photo ${index + 1} of ${galleryPhotos.length}`}
+                aria-label={`Open gallery photo ${index + 1} of ${filteredGalleryPhotos.length}`}
               >
                 <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
-                <span>{photo.collection}</span>
               </button>
             ))}
           </div>
 
-          {!galleryExpanded && (
+          {filteredGalleryPhotos.length > 18 && (
             <div className="ti-gallery-more">
-              <button className="secondary-button" onClick={() => setGalleryExpanded(true)}>
-                <Images size={18} /> View all {galleryPhotos.length} photos
+              <button className="secondary-button" onClick={() => setGalleryExpanded((expanded) => !expanded)}>
+                <Images size={18} /> {galleryExpanded ? "Show fewer photos" : `View all ${filteredGalleryPhotos.length} photos`}
               </button>
-              <p>Photographs from Tuokoleane Initiative shared archives.</p>
             </div>
           )}
         </div>
@@ -706,16 +780,34 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
       {selectedGalleryPhoto && selectedGalleryIndex !== null && (
         <div className="ti-gallery-lightbox" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedGalleryIndex(null)}>
           <section className="ti-gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="ti-gallery-dialog-title">
-            <button className="ti-gallery-close" onClick={() => setSelectedGalleryIndex(null)} aria-label="Close gallery photo" autoFocus><X size={22} /></button>
-            <button className="ti-gallery-previous" onClick={showPreviousGalleryPhoto} aria-label="Previous gallery photo"><ArrowLeft size={24} /></button>
-            <figure>
-              <img src={selectedGalleryPhoto.src} alt={selectedGalleryPhoto.alt} />
-              <figcaption>
-                <span id="ti-gallery-dialog-title">{selectedGalleryPhoto.collection}</span>
-                <strong>{selectedGalleryIndex + 1} / {galleryPhotos.length}</strong>
-              </figcaption>
-            </figure>
-            <button className="ti-gallery-next" onClick={showNextGalleryPhoto} aria-label="Next gallery photo"><ArrowRight size={24} /></button>
+            <header className="ti-gallery-dialog-header">
+              <div>
+                <strong id="ti-gallery-dialog-title">{selectedGalleryPhoto.collection}</strong>
+                <span>{selectedGalleryIndex + 1} / {galleryPhotos.length}</span>
+              </div>
+              <button className="ti-gallery-close" onClick={() => setSelectedGalleryIndex(null)} aria-label="Close gallery photo" autoFocus><X size={22} /></button>
+            </header>
+            <div className="ti-gallery-stage">
+              <button className="ti-gallery-previous" onClick={showPreviousGalleryPhoto} aria-label="Previous gallery photo"><ArrowLeft size={24} /></button>
+              <figure>
+                <img src={selectedGalleryPhoto.src} alt={selectedGalleryPhoto.alt} decoding="async" />
+              </figure>
+              <button className="ti-gallery-next" onClick={showNextGalleryPhoto} aria-label="Next gallery photo"><ArrowRight size={24} /></button>
+            </div>
+            <div className="ti-gallery-filmstrip" aria-label="Choose a gallery photo">
+              {galleryPhotos.map((photo, index) => (
+                <button
+                  className={selectedGalleryIndex === index ? "active" : ""}
+                  type="button"
+                  aria-label={`View photo ${index + 1} of ${galleryPhotos.length}`}
+                  aria-current={selectedGalleryIndex === index ? "true" : undefined}
+                  onClick={() => setSelectedGalleryIndex(index)}
+                  key={photo.src}
+                >
+                  <img src={photo.src} alt="" loading="lazy" decoding="async" />
+                </button>
+              ))}
+            </div>
           </section>
         </div>
       )}
