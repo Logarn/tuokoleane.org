@@ -116,15 +116,10 @@ export function validateDonationSubmission(value: unknown): DonationValidationRe
     }
 
     const submittedAmount = Number(item.unitAmount);
-    const unitAmount = catalogueItem.kind === "fixed"
-      ? catalogueItem.price ?? 0
-      : catalogueItem.kind === "custom"
-        ? submittedAmount
-        : 0;
+    const unitAmount = catalogueItem.kind === "time" ? 0 : submittedAmount;
 
     if (
-      (catalogueItem.kind === "fixed" && submittedAmount !== unitAmount)
-      || (catalogueItem.kind === "custom" && submittedAmount < (catalogueItem.minimumAmount ?? 500))
+      (catalogueItem.kind !== "time" && submittedAmount < (catalogueItem.minimumAmount ?? 20))
       || (catalogueItem.kind === "time" && submittedAmount !== 0)
     ) {
       return { ok: false, error: "One item has changed since it was added. Please refresh the page and try again." };

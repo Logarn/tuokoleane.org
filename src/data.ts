@@ -88,6 +88,11 @@ const gallery = (id: string, descriptions: string[]): GalleryImage[] =>
     alt: description,
   }));
 
+const galleryWithHero = (id: string, heroFilename: string, descriptions: string[]): GalleryImage[] =>
+  gallery(id, descriptions).map((image, index) =>
+    index === 0 ? { ...image, src: `/images/listings/${id}/${heroFilename}` } : image,
+  );
+
 const productGallery = (id: string, filenames: string[], descriptions: string[]): GalleryImage[] =>
   filenames.map((filename, index) => ({
     src: `/images/listings/${id}/${filename}`,
@@ -100,16 +105,16 @@ export const kindnessPackages: KindnessPackage[] = [
     title: "Donate any amount",
     shortDescription: "Let TI put your gift where it can help most right now.",
     description:
-      "Not sure which cause to choose? Give any amount from KSh 500, and the TI team will put it towards a current need in the catalogue. The team records where your contribution goes and checks your payment before confirming it.",
+      "Not sure which cause to choose? Give any amount from KSh 20, and the TI team will put it towards a current need in the catalogue. The team records where your contribution goes and checks your payment before confirming it.",
     category: "Community",
     program: "Tuokoleane Initiative",
     kind: "custom",
-    minimumAmount: 500,
+    minimumAmount: 20,
     duration: "Choose an amount",
     label: "Flexible giving",
     specialBadge: "Angel's Favourite",
     icon: HeartHandshake,
-    includes: ["Any amount from KSh 500", "Support for a need the TI team has already checked", "Payment checking and follow-up from TI"],
+    includes: ["Any amount from KSh 20", "Support for a need the TI team has already checked", "Payment checking and follow-up from TI"],
     images: [
       { src: "/images/ti-gallery/ti-gallery-51.jpg", alt: "Tuokoleane community members sharing time together" },
       { src: "/images/ti-gallery/ti-gallery-10.jpg", alt: "Group moment from a Tuokoleane activity" },
@@ -118,7 +123,7 @@ export const kindnessPackages: KindnessPackage[] = [
     ],
     suitableFor: "A simple choice if you want to help but do not mind which need comes first.",
     coordination: "TI checks your payment, chooses a current need and records what your contribution supports.",
-    goodToKnow: ["The minimum contribution is KSh 500.", "TI chooses where the contribution can help most among current needs.", "Your M-PESA code is checked before the donation is confirmed."],
+    goodToKnow: ["The minimum contribution is KSh 20.", "TI chooses where the contribution can help most among current needs.", "Your M-PESA code is checked before the donation is confirmed."],
     imageDisclosure: "These are real photographs from Tuokoleane activities. They show TI community moments, not the person or cause your gift will support.",
   },
   {
@@ -234,13 +239,13 @@ export const kindnessPackages: KindnessPackage[] = [
     category: "Education",
     program: "TI All-Round Champ",
     kind: "custom",
-    minimumAmount: 500,
+    minimumAmount: 20,
     duration: "Choose an amount",
     label: "Learning experience",
     icon: BusFront,
     includes: ["A contribution towards the confirmed trip cost", "Checks with the school and guardian", "Payment to the school or approved provider where possible"],
     images: [
-      { src: "/images/ti-gallery/ti-gallery-29.jpg", alt: "Tuokoleane archive photograph of a child and adult sharing a learning activity" },
+      { src: "/images/listings/school-trip/ti-school-trip-children-boarding-bus.jpg", alt: "Schoolchildren boarding a bus with a teacher for a learning trip" },
       { src: "/images/ti-gallery/ti-gallery-31.jpg", alt: "Tuokoleane archive photograph from a community activity with children" },
       { src: "/images/ti-gallery/ti-gallery-32.jpg", alt: "Tuokoleane archive photograph of children taking part in a shared activity" },
       { src: "/images/ti-gallery/ti-gallery-51.jpg", alt: "Tuokoleane archive photograph of a wider community gathering" },
@@ -248,7 +253,6 @@ export const kindnessPackages: KindnessPackage[] = [
     suitableFor: "Anyone who wants to help a learner join a school activity they might otherwise miss.",
     coordination: "TI checks the school’s request, guardian consent and amount due before using the contribution.",
     goodToKnow: ["Several contributions may be combined to cover the full cost.", "No cash is handed directly to a child.", "A place is only confirmed after the school and TI complete their checks."],
-    imageDisclosure: "These photographs show learning and community moments from the Tuokoleane archive. The people pictured are not presented as recipients of this contribution.",
   },
   {
     id: "medical-bill",
@@ -259,7 +263,7 @@ export const kindnessPackages: KindnessPackage[] = [
     category: "Health",
     program: "TI FamilyFit",
     kind: "custom",
-    minimumAmount: 500,
+    minimumAmount: 20,
     duration: "Choose an amount",
     label: "Help with care",
     specialBadge: "Angel's Favourite",
@@ -387,7 +391,7 @@ export const kindnessPackages: KindnessPackage[] = [
     category: "Education",
     program: "TI All-Round Champ",
     kind: "custom",
-    minimumAmount: 500,
+    minimumAmount: 20,
     duration: "Choose an amount",
     label: "Ready for school",
     icon: Shirt,
@@ -444,8 +448,8 @@ export const kindnessPackages: KindnessPackage[] = [
     specialBadge: "Angel's Favourite",
     icon: Apple,
     includes: ["A contribution towards one meal", "Planning by the local TI team", "An update when TI has one to share"],
-    images: gallery("meal", [
-      "a family and volunteers preparing a meal together",
+    images: galleryWithHero("meal", "ti-family-lunch-together.jpg", [
+      "two people sharing a meal at a community table",
       "fresh food being served at a shared table",
       "people sharing an ordinary community meal",
       "hands preparing vegetables in a bright kitchen",
@@ -492,8 +496,8 @@ export const kindnessPackages: KindnessPackage[] = [
     label: "For the future",
     icon: Sprout,
     includes: ["A contribution towards a tree or seedling", "Planting arranged with a local group", "An update when TI has one to share"],
-    images: gallery("tree", [
-      "community members planting a young tree together",
+    images: galleryWithHero("tree", "ti-community-tree-planting.jpg", [
+      "two volunteers planting a young tree outdoors",
       "hands setting a seedling into prepared soil",
       "a family watering a newly planted tree",
       "neighbours caring for young trees in a shared green space",
@@ -511,12 +515,12 @@ export const kindnessPackages: KindnessPackage[] = [
     category: "Education",
     program: "TI All-Round Champ",
     kind: "custom",
-    minimumAmount: 500,
+    minimumAmount: 20,
     duration: "Choose an amount",
     label: "Education support",
     specialBadge: "Angel's Favourite",
     icon: GraduationCap,
-    includes: ["An amount you choose from KSh 500", "Support for TI’s education fund", "An update when TI has one to share"],
+    includes: ["An amount you choose from KSh 20", "Support for TI’s education fund", "An update when TI has one to share"],
     images: gallery("school-fees", [
       "a learner participating confidently in class",
       "a teacher supporting a learner during a lesson",
@@ -540,8 +544,8 @@ export const kindnessPackages: KindnessPackage[] = [
     label: "Give your time",
     icon: HeartHandshake,
     includes: ["A one-hour starting commitment", "Matching based on your skills and availability", "A conversation with TI before any placement"],
-    images: gallery("mentor", [
-      "a mentor and learner working through a practical project",
+    images: galleryWithHero("mentor", "ti-mentor-learning-conversation.jpg", [
+      "two adults discussing a workbook at a learning table",
       "a small supervised mentoring session in a learning space",
       "a mentor listening as a learner explains an idea",
       "a collaborative study activity with a facilitator present",
@@ -633,8 +637,8 @@ export const kindnessPackages: KindnessPackage[] = [
     label: "Create space",
     icon: MessageCircleHeart,
     includes: ["A contribution towards session materials", "Help with the facilitator and venue", "An update when TI has one to share"],
-    images: gallery("sharesphere-session", [
-      "young adults sharing artwork in a peer circle",
+    images: galleryWithHero("sharesphere-session", "ti-sharesphere-community-conversation.jpg", [
+      "a woman facilitating a small group conversation",
       "a small outdoor peer conversation",
       "a spoken-word and music session with a facilitator",
       "a facilitator preparing a welcoming creative space",
@@ -656,8 +660,8 @@ export const kindnessPackages: KindnessPackage[] = [
     label: "Give company",
     icon: HeartHandshake,
     includes: ["A chance to share your interest", "A visit arranged locally with consent", "Simple guidance before you take part"],
-    images: gallery("elder-visit", [
-      "an older woman sharing tea with adult neighbours",
+    images: galleryWithHero("elder-visit", "ti-older-neighbour-visit.jpg", [
+      "two neighbours sharing tea and conversation",
       "an older man teaching a board game to younger neighbours",
       "an older woman sharing family photographs with visitors",
       "older neighbours and younger adults tending herbs together",

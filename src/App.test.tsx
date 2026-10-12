@@ -359,13 +359,13 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByText(/An email enquiry does not reserve a place/)).toBeInTheDocument();
   });
 
-  it("offers a flexible donation from the current KSh 500 minimum", () => {
+  it("offers a suggested amount and allows donations from KSh 20", () => {
     window.history.replaceState({}, "", "/listing/donate-any-amount");
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Donate any amount", level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" })).toHaveValue("1000");
-    expect(screen.getByText("The minimum contribution is KSh 500.")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" })).toHaveValue("500");
+    expect(screen.getByText("The minimum contribution is KSh 20.")).toBeInTheDocument();
   });
 
   it("renders a new cause listing on a direct route", () => {
@@ -604,16 +604,33 @@ describe("Tuokoleane kindness marketplace", () => {
     ]);
   });
 
-  it("prevents a custom contribution below the minimum", async () => {
+  it("prevents a custom contribution below KSh 20", async () => {
     window.history.replaceState({}, "", "/listing/school-fees");
     const user = userEvent.setup();
     render(<App />);
 
     const amount = screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" });
     await user.clear(amount);
-    await user.type(amount, "400");
+    await user.type(amount, "19");
 
-    expect(screen.getByText("Enter at least Ksh 500.")).toBeInTheDocument();
+    expect(screen.getByText("Enter at least Ksh 20.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add to basket" })).toBeDisabled();
+  });
+
+  it("accepts a smaller contribution towards a fixed-price item without calling it a full purchase", async () => {
+    window.history.replaceState({}, "", "/listing/grocery-basket");
+    const user = userEvent.setup();
+    render(<App />);
+
+    const amount = screen.getByRole("textbox", { name: "Contribution amount in Kenyan shillings" });
+    expect(amount).toHaveValue("2500");
+    await user.clear(amount);
+    await user.type(amount, "20");
+
+    expect(screen.getByText(/TI may combine it with other contributions/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add to basket" }));
+    expect(JSON.parse(window.localStorage.getItem("ti-kindness-basket") ?? "[]")).toEqual([
+      { packageId: "grocery-basket", quantity: 1, amount: 20 },
+    ]);
   });
 });

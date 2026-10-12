@@ -91,7 +91,7 @@ describe("donation notification function", () => {
     expect(email.text).not.toContain("A made-up cause");
   });
 
-  it("rejects unknown catalogue items and changed fixed prices", async () => {
+  it("rejects unknown catalogue items and contributions below KSh 20", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
@@ -101,12 +101,29 @@ describe("donation notification function", () => {
     }));
     expect(unknownResponse.status).toBe(400);
 
-    const changedPriceResponse = await donationsFunction.fetch(donationRequest({
+    const belowMinimumResponse = await donationsFunction.fetch(donationRequest({
       ...validSubmission,
-      items: [{ ...validSubmission.items[0], unitAmount: 1 }],
+      items: [{ ...validSubmission.items[0], unitAmount: 19 }],
     }));
-    expect(changedPriceResponse.status).toBe(400);
+    expect(belowMinimumResponse.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts a partial contribution towards a fixed-price item", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test_key");
+    vi.stubEnv("DONATION_EMAIL_FROM", "Tuokoleane Initiative <donations@tuokoleane.org>");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "email_789" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await donationsFunction.fetch(donationRequest({
+      ...validSubmission,
+      items: [{ ...validSubmission.items[0], unitAmount: 20 }],
+    }));
+
+    expect(response.status).toBe(201);
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const email = JSON.parse(String(request.body));
+    expect(email.subject).toBe("New donation submitted: Ksh 20 for Buy a meal");
   });
 
   it("measures the received body instead of trusting Content-Length", async () => {

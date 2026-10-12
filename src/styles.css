@@ -527,8 +527,10 @@ img { display: block; max-width: 100%; }
 .pledge-price span { color: var(--muted); font-size: 13px; }
 .amount-field { display: grid; gap: 8px; margin-bottom: 16px; }
 .amount-field > span { font-size: 12px; font-weight: 750; }
+.amount-field > small { color: var(--muted); font-size: 12px; }
 .amount-field > div { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid #aaa; border-radius: 9px; }
 .amount-field input { width: 100%; border: 0; outline: 0; font-size: 17px; font-weight: 700; }
+.contribution-note { margin: -4px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .pledge-summary { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 22px; padding: 16px 0; border-top: 1px solid var(--soft-line); border-bottom: 1px solid var(--soft-line); font-size: 13px; }
 .pledge-summary span { color: var(--muted); }
 .pledge-summary strong { text-align: right; }

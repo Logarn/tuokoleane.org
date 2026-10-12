@@ -14,7 +14,7 @@ interface MobileCatalogueProps {
 
 function formatPrice(item: KindnessPackage) {
   if (item.kind === "time") return "Give your time";
-  if (item.kind === "custom") return `From Ksh ${(item.minimumAmount ?? 500).toLocaleString("en-KE")}`;
+  if (item.kind === "custom") return `Ksh ${(item.price ?? 500).toLocaleString("en-KE")} suggested`;
   return `Ksh ${(item.price ?? 0).toLocaleString("en-KE")}`;
 }
 

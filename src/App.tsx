@@ -221,7 +221,7 @@ type GalleryCollection = (typeof galleryCollections)[number];
 
 function packagePrice(item: KindnessPackage) {
   if (item.kind === "fixed") return currency.format(item.price ?? 0);
-  if (item.kind === "custom") return `From ${currency.format(item.minimumAmount ?? 500)}`;
+  if (item.kind === "custom") return `${currency.format(item.price ?? 500)} suggested`;
   return "Give your time";
 }
 
@@ -303,7 +303,7 @@ function AppContent() {
   };
 
   const addToBasket = (item: KindnessPackage, amount?: number) => {
-    const unitAmount = item.kind === "fixed" ? item.price ?? 0 : item.kind === "custom" ? amount ?? 0 : 0;
+    const unitAmount = item.kind === "time" ? 0 : amount ?? item.price ?? 500;
     setBasket((current) => {
       const match = current.find((entry) => entry.packageId === item.id && entry.amount === unitAmount);
       if (match) {
@@ -663,13 +663,13 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
       <section className="home-hero" aria-label="Tuokoleane Catalogue of Kindness">
         <img
           className="home-hero-image"
-          src="/images/listings/meal/02.jpg"
-          srcSet="/images/hero/family-meal-640.jpg 640w, /images/hero/family-meal-960.jpg 960w, /images/listings/meal/02.jpg 1440w"
+          src="/images/hero/tuokoleane-family-table-1774.jpg"
+          srcSet="/images/hero/tuokoleane-family-table-640.jpg 640w, /images/hero/tuokoleane-family-table-960.jpg 960w, /images/hero/tuokoleane-family-table-1774.jpg 1774w"
           sizes="100vw"
-          width="1440"
-          height="960"
+          width="1774"
+          height="888"
           fetchPriority="high"
-          alt="A family sharing a meal together"
+          alt="Friends sharing a meal around a family table"
         />
         <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-copy page-width">
@@ -827,7 +827,7 @@ function ValuesSection() {
       <div className="page-width model-stats" aria-label="Catalogue overview">
         <div><strong>{kindnessPackages.length}</strong><span>practical ways to help</span></div>
         <div><strong>3</strong><span>ways to give: money, time or goods</span></div>
-        <div><strong>{currency.format(500)}</strong><span>starting contribution</span></div>
+        <div><strong>{currency.format(20)}</strong><span>starting contribution</span></div>
       </div>
     </section>
   );
@@ -1243,12 +1243,12 @@ function PaymentBadges({ compact = false }: { compact?: boolean }) {
 }
 
 function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd: (item: KindnessPackage, amount?: number) => void; onNavigate: (path: string, hash?: string) => void }) {
-  const [customAmount, setCustomAmount] = useState("1000");
+  const [customAmount, setCustomAmount] = useState(String(item.price ?? 500));
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share");
 
   useEffect(() => {
-    setCustomAmount("1000");
+    setCustomAmount(String(item.price ?? 500));
     setGalleryOpen(false);
   }, [item.id]);
 
@@ -1269,8 +1269,8 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
     }
   };
 
-  const amount = item.kind === "custom" ? Number(customAmount) || 0 : item.price ?? 0;
-  const minimumAmount = item.minimumAmount ?? 500;
+  const amount = item.kind === "time" ? 0 : Number(customAmount) || 0;
+  const minimumAmount = item.minimumAmount ?? 20;
   const isEvent = Boolean(item.eventDate);
   const related = kindnessPackages.filter((candidate) => candidate.id !== item.id && candidate.category === item.category).slice(0, 3);
   const fallbackRelated = related.length >= 3 ? related : [...related, ...kindnessPackages.filter((candidate) => candidate.id !== item.id && !related.includes(candidate))].slice(0, 3);
@@ -1373,13 +1373,15 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
           </div>
 
           <aside className="pledge-card" aria-label={item.actionLabel ?? (item.kind === "time" ? "Share your interest" : "Make a donation")}>
-            <div className="pledge-price"><strong>{item.kind === "custom" ? "Choose your amount" : packagePrice(item)}</strong><span>{item.kind === "time" ? item.duration : item.priceUnit ?? "per contribution"}</span></div>
-            {item.kind === "custom" && (
+            <div className="pledge-price"><strong>{item.kind === "time" ? packagePrice(item) : currency.format(item.price ?? 500)}</strong><span>{item.kind === "time" ? item.duration : item.priceUnit ?? "suggested contribution"}</span></div>
+            {item.kind !== "time" && (
               <label className="amount-field">
-                <span>Your contribution</span>
+                <span>Want to contribute a different amount?</span>
+                <small>Enter an amount from as low as KSh 20.</small>
                 <div><b>KSh</b><input inputMode="numeric" value={customAmount} onChange={(event) => setCustomAmount(event.target.value.replace(/\D/g, ""))} aria-label="Contribution amount in Kenyan shillings" /></div>
               </label>
             )}
+            {item.kind === "fixed" && amount < (item.price ?? 0) && amount >= minimumAmount && <p className="contribution-note">This will go towards the item. TI may combine it with other contributions to cover the full cost.</p>}
             <div className="pledge-summary">
               {isEvent ? (
                 <>
@@ -1405,10 +1407,10 @@ function ListingPage({ item, onAdd, onNavigate }: { item: KindnessPackage; onAdd
                   : <>After you pay, forward the M-PESA message to <a href={`sms:${TI_PAYMENT_DETAILS.confirmationPhoneLink}`}>{TI_PAYMENT_DETAILS.confirmationPhoneDisplay}</a>. You will enter the confirmation code at checkout.</>}
               </p>
             </section>
-            <button className="primary-button full" disabled={item.kind === "custom" && amount < minimumAmount} onClick={() => onAdd(item, amount)}>
+            <button className="primary-button full" disabled={item.kind !== "time" && amount < minimumAmount} onClick={() => onAdd(item, amount)}>
               {item.actionLabel ?? (item.kind === "time" ? "Add to my plan" : "Add to basket")}
             </button>
-            {item.kind === "custom" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)}.</p>}
+            {item.kind !== "time" && amount < minimumAmount && <p className="field-error">Enter at least {currency.format(minimumAmount)}.</p>}
           </aside>
         </div>
 
