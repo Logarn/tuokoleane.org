@@ -207,7 +207,7 @@ export function getRouteSeo(pathname: string): RouteSeo {
   if (pathname === "/about") {
     return knownRouteSeo({
       title: "About Tuokoleane Initiative",
-      description: "Meet Tuokoleane Initiative and learn how dignity, clarity and belonging shape practical acts of care across Kenyan communities.",
+      description: "Meet Tuokoleane Initiative and see how giving, sharing, care, love and kindness bring people together across Kenyan communities.",
       path: "/about",
       image: "/images/ti-gallery/ti-gallery-51.jpg",
       imageAlt: "Tuokoleane community members spending time together",

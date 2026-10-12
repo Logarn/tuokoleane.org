@@ -49,14 +49,21 @@ describe("Tuokoleane kindness marketplace", () => {
   });
 
   it("leads with the kindness marketplace proposition", () => {
-    render(<App />);
+    const { container } = render(<App />);
 
     expect(screen.getByRole("heading", {
-      name: "What if touching a life was as easy as shopping online?",
+      name: "What if Doing Charity was as easy as shopping online?",
       level: 1,
     })).toBeInTheDocument();
-    expect(screen.getByText("Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Browse ways to help" })).toBeInTheDocument();
+    expect(container.querySelector(".hero-lede")).toHaveTextContent("Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.");
+    expect(container.querySelector(".hero-lede strong")).toHaveTextContent("Give. Share. Care.");
+    expect(screen.getByRole("button", { name: "Become An Angel" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Angel's Amongst Us" })).toBeInTheDocument();
+    expect(container.querySelector(".home-hero-image")).toHaveAttribute("src", "/images/hero/tuokoleane-family-table-1774.jpg");
+    expect(container.querySelector(".home-hero-shade")).not.toBeInTheDocument();
+    expect([...container.querySelectorAll(".value-card h3")].map((heading) => heading.textContent)).toEqual(["Give", "Share", "Care", "Love & Kindness"]);
+    expect(container.querySelector(".kindness-mantra")).toHaveTextContent("If you cannot Give, Share.If you cannot Share, Care.Dare to Care.");
+    expect(container.querySelector(".footer-mantra")).toHaveTextContent("Dare to Care.");
     expect(screen.queryByText("The catalogue of kindness", { exact: false })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "What we stand for" })).not.toBeInTheDocument();
     expect(screen.queryByText("Based in Kenya")).not.toBeInTheDocument();
@@ -66,6 +73,16 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.queryByText("The values behind every listing")).not.toBeInTheDocument();
     expect(screen.queryByText("Ways to take part")).not.toBeInTheDocument();
     expect(screen.queryByText("Browse practical packages. Every one opens into its own page with the details and boundaries upfront.")).not.toBeInTheDocument();
+  });
+
+  it("opens the Who we are page from the hero", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Angel's Amongst Us" }));
+
+    expect(window.location.pathname).toBe("/about");
+    expect(screen.getByText("Who we are")).toBeInTheDocument();
   });
 
   it("uses an image-led discovery header with clear navigation", () => {
@@ -307,7 +324,10 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(window.location.pathname).toBe("/about");
     expect(screen.getByRole("heading", { name: "We belong to one another.", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Kindness becomes real when it becomes specific." })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Dignity" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Give", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Share", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Care", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Love & Kindness", level: 3 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Touching lives across campuses and counties." })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "What do you have to give?" })).not.toBeInTheDocument();
   });

@@ -671,13 +671,15 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
           fetchPriority="high"
           alt="Friends sharing a meal around a family table"
         />
-        <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-copy page-width">
-          <h1>What if touching a life was as easy as shopping online?</h1>
-          <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.</p>
-          <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
-            Browse ways to help <ArrowRight size={18} />
-          </button>
+          <h1>What if Doing Charity was as easy as shopping online?</h1>
+          <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to <strong>Give. Share. Care.</strong></p>
+          <div className="hero-actions">
+            <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
+              Become An Angel <ArrowRight size={18} />
+            </button>
+            <button className="hero-secondary" onClick={() => onNavigate("/about")}>Angel&apos;s Amongst Us</button>
+          </div>
         </div>
       </section>
 
@@ -811,18 +813,26 @@ function ValuesSection() {
         <article className="value-card value-card-primary">
           <span className="value-number">01</span>
           <div className="value-orbits" aria-hidden="true"><i /><i /><i /><Heart fill="currentColor" /></div>
-          <div><p>Our first value</p><h3>Dignity</h3><span>People are participants in their own lives, not material for a campaign.</span></div>
+          <div><p>Start where you are</p><h3>Give</h3><span>Offer what you can. A meal, a book or a little money can mean a lot.</span></div>
         </article>
-        <article className="value-card">
+        <article className="value-card value-card-share">
           <span className="value-number">02</span>
           <div className="value-line" aria-hidden="true"><i /><i /><i /></div>
-          <div><p>Make the path visible</p><h3>Clarity</h3><span>Say what your contribution covers, who handles it and what still needs to be checked.</span></div>
+          <div><p>More than money</p><h3>Share</h3><span>Pass on your time, skills or something useful. Someone may need exactly that.</span></div>
         </article>
-        <article className="value-card">
+        <article className="value-card value-card-care">
           <span className="value-number">03</span>
           <div className="value-people" aria-hidden="true"><i /><i /><i /></div>
-          <div><p>One big family</p><h3>Belonging</h3><span>Give with people, not at them. Care works best when everyone has a say.</span></div>
+          <div><p>Be there</p><h3>Care</h3><span>Show up, listen and check in. Sometimes being there is the help.</span></div>
         </article>
+        <article className="value-card value-card-kindness">
+          <span className="value-number">04</span>
+          <div className="value-kindness" aria-hidden="true"><Heart fill="currentColor" /></div>
+          <div><p>Keep it human</p><h3>Love &amp; Kindness</h3><span>Do the thoughtful thing, even when no one is watching. Kindness needs no audience.</span></div>
+        </article>
+      </div>
+      <div className="page-width">
+        <p className="kindness-mantra"><span>If you cannot <b>Give</b>, <b>Share</b>.</span><span>If you cannot <b>Share</b>, <b>Care</b>.</span><em>Dare to Care.</em></p>
       </div>
       <div className="page-width model-stats" aria-label="Catalogue overview">
         <div><strong>{kindnessPackages.length}</strong><span>practical ways to help</span></div>
@@ -889,7 +899,7 @@ function AboutPage({ onNavigate }: { onNavigate: (path: string, hash?: string) =
     <main id="top">
       <section className="program-hero page-width" aria-labelledby="about-ti-title">
         <div className="program-hero-copy">
-          <p className="eyebrow">About Tuokoleane Initiative</p>
+          <p className="eyebrow">Who we are</p>
           <h1 id="about-ti-title">We belong to one another.</h1>
           <p>Tuokoleane brings people together to share practical help, look out for one another and treat every person with dignity.</p>
         </div>
@@ -1589,7 +1599,7 @@ function Footer({ onNavigate }: { onNavigate: (path: string, hash?: string) => v
     <footer className="site-footer">
       <div className="page-width footer-cta"><div><p className="eyebrow">Start with what you can do today</p><h2>One useful act is enough to begin.</h2></div><button className="primary-button" onClick={() => onNavigate("/", "marketplace")}>Find a way to help <ArrowRight size={18} /></button></div>
       <div className="page-width footer-grid">
-        <div className="footer-brand"><BrandLogo variant="symbol" className="footer-symbol" alt="Tuokoleane Initiative symbol" /><p>Tuokoleane brings people together to share practical help, look out for one another and treat every person with dignity.</p><span>Kenya · Give · Share · Care</span></div>
+        <div className="footer-brand"><BrandLogo variant="symbol" className="footer-symbol" alt="Tuokoleane Initiative symbol" /><p>Tuokoleane brings people together to share practical help, look out for one another and treat every person with dignity.</p><span className="footer-mantra">If you cannot Give, Share.<br />If you cannot Share, Care.<br /><strong>Dare to Care.</strong></span></div>
         <div><strong>Explore</strong><a href="/#marketplace" onClick={(event) => homeLink(event, "marketplace")}>Ways to help</a><a href="/#programs" onClick={(event) => homeLink(event, "programs")}>Programmes</a><a href="/about#values" onClick={(event) => routeLink(event, "/about", "values")}>Our values</a><a href="/gallery" onClick={(event) => routeLink(event, "/gallery")}>Gallery</a></div>
         <div><strong>Take part</strong><a href="/listing/meal" onClick={(event) => { event.preventDefault(); onNavigate("/listing/meal"); }}>Give a meal</a><a href="/listing/school-fees" onClick={(event) => { event.preventDefault(); onNavigate("/listing/school-fees"); }}>Support education</a><a href="/listing/wellness-day" onClick={(event) => { event.preventDefault(); onNavigate("/listing/wellness-day"); }}>Support a wellness day</a></div>
         <div><strong>Learn</strong><a href="/program/sharesphere" onClick={(event) => { event.preventDefault(); onNavigate("/program/sharesphere"); }}>ShareSphere</a><a href="/program/family-units" onClick={(event) => { event.preventDefault(); onNavigate("/program/family-units"); }}>Family Units</a><a href="https://tuokoleane.org">Visit Tuokoleane.org</a></div>

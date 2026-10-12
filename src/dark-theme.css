@@ -216,9 +216,33 @@
     background: linear-gradient(135deg, #23295f 0%, #30295f 64%, #632f69 100%);
   }
 
+  .value-card-share {
+    border-color: #5b3b50;
+    background: #2a202c;
+  }
+
+  .value-card-care {
+    border-color: #344763;
+    background: #1f2a3e;
+  }
+
+  .value-card-kindness {
+    border-color: #604052;
+    background: #30222c;
+  }
+
   .value-card p,
   .model-stats strong {
     color: #aeb8ff;
+  }
+
+  .value-card-primary p {
+    color: var(--accent-on-dark);
+  }
+
+  .kindness-mantra {
+    background: linear-gradient(115deg, #202a44 0%, #382636 100%);
+    color: #f5f6fa;
   }
 
   .value-card > div:last-child > span,
