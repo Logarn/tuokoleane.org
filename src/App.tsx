@@ -673,7 +673,7 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
         />
         <div className="home-hero-copy page-width">
           <h1>What if Doing Charity was as easy as shopping online?</h1>
-          <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to <strong>Give. Share. Care.</strong></p>
+          <p className="hero-lede">Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.</p>
           <div className="hero-actions">
             <button className="primary-button hero-primary" onClick={() => document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" })}>
               Become An Angel <ArrowRight size={18} />

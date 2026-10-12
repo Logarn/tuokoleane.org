@@ -56,7 +56,7 @@ describe("Tuokoleane kindness marketplace", () => {
       level: 1,
     })).toBeInTheDocument();
     expect(container.querySelector(".hero-lede")).toHaveTextContent("Welcome to the Amazon of Charity. A place where anyone, anywhere, can find a way to Give. Share. Care.");
-    expect(container.querySelector(".hero-lede strong")).toHaveTextContent("Give. Share. Care.");
+    expect(container.querySelector(".hero-lede strong")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Become An Angel" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Angel's Amongst Us" })).toBeInTheDocument();
     expect(container.querySelector(".home-hero-image")).toHaveAttribute("src", "/images/hero/tuokoleane-family-table-1774.jpg");
