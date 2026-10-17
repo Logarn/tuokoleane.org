@@ -191,7 +191,7 @@ const featuredGalleryPhotoNumbers = [
 ];
 
 const excludedGalleryPhotoNumbers = new Set([
-  17, 21, 22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71, 73,
+  9, 17, 21, 22, 24, 27, 28, 36, 42, 43, 49, 50, 55, 56, 61, 63, 66, 67, 70, 71, 73,
 ]);
 
 const collapsedGalleryPhotoCount = 5;

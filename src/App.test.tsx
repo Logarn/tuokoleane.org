@@ -299,15 +299,17 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getAllByRole("button", { name: /Open gallery photo/ })).toHaveLength(5);
     expect([...container.querySelectorAll<HTMLImageElement>(".ti-gallery-card img")]
       .every((image) => image.getAttribute("loading") === "lazy")).toBe(true);
+    expect(container.querySelector('img[src="/images/ti-gallery/ti-gallery-09.jpg"]')).not.toBeInTheDocument();
     expect(container.querySelector('img[src="/images/ti-gallery/ti-gallery-17.jpg"]')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 55" }));
+    await user.click(screen.getByRole("button", { name: "Open gallery photo 1 of 54" }));
     const dialog = screen.getByRole("dialog", { name: "Family Experience" });
-    expect(within(dialog).getByText("1 / 55")).toBeInTheDocument();
-    expect(within(dialog).getAllByRole("button", { name: /View photo/ })).toHaveLength(55);
+    expect(within(dialog).getByText("1 / 54")).toBeInTheDocument();
+    expect(within(dialog).getAllByRole("button", { name: /View photo/ })).toHaveLength(54);
+    expect(dialog.querySelector('img[src="/images/ti-gallery/ti-gallery-09.jpg"]')).not.toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Next gallery photo" }));
-    expect(within(dialog).getByText("2 / 55")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 / 54")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("button", { name: "Close gallery photo" }));
     await user.click(screen.getByRole("button", { name: /Family Experience.*25/ }));
