@@ -685,7 +685,8 @@ function HomePage({ onNavigate }: { onNavigate: (path: string, hash?: string) =>
 
       <section className="marketplace page-width" id="marketplace">
         <div className="section-heading">
-          <h2>What do you have to give?</h2>
+          <h2>What good can you do today?</h2>
+          <p>Over 1000 ways to Give. Share. Care</p>
         </div>
         <div className="marketplace-toolbar">
           <div

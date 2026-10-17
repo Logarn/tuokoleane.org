@@ -59,6 +59,8 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(container.querySelector(".hero-lede strong")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Become An Angel" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Angel's Amongst Us" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What good can you do today?", level: 2 })).toBeInTheDocument();
+    expect(screen.getByText("Over 1000 ways to Give. Share. Care")).toBeInTheDocument();
     expect(container.querySelector(".home-hero-image")).toHaveAttribute("src", "/images/hero/tuokoleane-family-table-1774.jpg");
     expect(container.querySelector(".home-hero-shade")).not.toBeInTheDocument();
     expect([...container.querySelectorAll(".value-card h3")].map((heading) => heading.textContent)).toEqual(["Give", "Share", "Care", "Love & Kindness"]);
@@ -329,7 +331,7 @@ describe("Tuokoleane kindness marketplace", () => {
     expect(screen.getByRole("heading", { name: "Care", level: 3 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Love & Kindness", level: 3 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Touching lives across campuses and counties." })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "What do you have to give?" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What good can you do today?" })).not.toBeInTheDocument();
   });
 
   it("opens Gallery on its own route without the homepage catalogue", async () => {
@@ -341,7 +343,7 @@ describe("Tuokoleane kindness marketplace", () => {
 
     expect(window.location.pathname).toBe("/gallery");
     expect(screen.getByRole("heading", { name: "Tuokoleane Initiative Gallery", level: 1 })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "What do you have to give?" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What good can you do today?" })).not.toBeInTheDocument();
   });
 
   it("opens each package on its own route", async () => {
